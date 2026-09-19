@@ -9,18 +9,38 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  */
 let admin: SupabaseClient | null = null;
 
+/**
+ * Vercel's Supabase integration injects SUPABASE_URL, while a hand-configured
+ * project usually has NEXT_PUBLIC_SUPABASE_URL. Accept either, so the server
+ * works without asking anyone to duplicate a variable they already set.
+ */
+function adminUrl(): string | undefined {
+  return process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+}
+
+/**
+ * Prefers the service role key. Falls back to the anon key so analytics still
+ * record on an integration-provisioned project -- the insert policy on
+ * analytics_events allows anonymous rows.
+ */
+function adminKey(): string | undefined {
+  return (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
 export function isAdminConfigured(): boolean {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(adminUrl() && adminKey());
 }
 
 export function getAdminClient(): SupabaseClient | null {
   if (!isAdminConfigured()) return null;
   if (!admin) {
-    admin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
-    );
+    admin = createClient(adminUrl()!, adminKey()!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
   }
   return admin;
 }
