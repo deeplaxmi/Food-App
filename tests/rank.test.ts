@@ -5,6 +5,7 @@ import {
   buildProfile,
   checkHardExclusions,
   recommend,
+  scoreRecipe,
   toddlerOption,
   type AvailableItem,
 } from "../src/lib/rank";
@@ -395,4 +396,67 @@ test("a plain portion is offered when there's a little one, and not otherwise", 
   // Households without small children are shown none of this.
   const adultsOnly = buildProfile(household, members, prefs(), []);
   assert.equal(toddlerOption(pasta, adultsOnly), null);
+});
+
+test("learns who actually eats what, rather than guessing from age", () => {
+  // Two children, same age bracket, opposite tastes. Age tells us nothing here;
+  // who cleared their plate tells us everything.
+  const kids: HouseholdMember[] = [
+    { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+    { id: "m2", householdId: "h1", name: "Sol", isChild: true, ageStage: "child", createdAt: "" },
+    { id: "m3", householdId: "h1", name: "Wren", isChild: true, ageStage: "child", createdAt: "" },
+  ];
+
+  const ateCurry = (recipeId: string, who: string[]): MealFeedback => ({
+    id: `f-${recipeId}-${who.join("")}`, householdId: "h1", recipeId, recommendationId: null,
+    kind: "cooked", rejectionReason: null, rejectionNote: null,
+    ateIt: who, rating: 4, spiceLevelRight: "just-right",
+    wouldMakeAgain: true, hadLeftovers: false, createdAt: new Date().toISOString(),
+  });
+
+  // Sol eats curries, Wren never does. Three sittings.
+  const history = [
+    ateCurry("lib-chana-saag", ["Ada", "Sol"]),
+    ateCurry("lib-spinach-dal", ["Ada", "Sol"]),
+    ateCurry("lib-palak-paneer", ["Ada", "Sol"]),
+  ];
+
+  const profile = buildProfile(household, kids, prefs(), history);
+  const sol = profile.plateHistory.get("Sol")?.get("curry");
+  const wren = profile.plateHistory.get("Wren")?.get("curry");
+  assert.deepEqual(sol, { ate: 3, skipped: 0 });
+  assert.deepEqual(wren, { ate: 0, skipped: 3 });
+
+  // A curry we haven't cooked yet should now carry a warning naming Wren.
+  const newCurry = RECIPE_LIBRARY.find((r) => r.id === "lib-thai-green-curry")!;
+  const scored = scoreRecipe(newCurry, profile, produce);
+  assert.ok(scored, "recipe should still be offered, just demoted");
+  assert.ok(
+    scored!.warnings.some((w) => w.includes("Wren")),
+    `expected a warning about Wren, got: ${scored!.warnings.join(" | ")}`,
+  );
+  assert.ok(
+    scored!.preferencesConsidered.some((p) => p.includes("Sol")),
+    "expected Sol's history to count in its favour",
+  );
+});
+
+test("one sitting isn't enough to conclude anything about someone", () => {
+  const kids: HouseholdMember[] = [
+    { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+    { id: "m2", householdId: "h1", name: "Sol", isChild: true, ageStage: "child", createdAt: "" },
+  ];
+  const once: MealFeedback[] = [{
+    id: "f1", householdId: "h1", recipeId: "lib-chana-saag", recommendationId: null,
+    kind: "cooked", rejectionReason: null, rejectionNote: null,
+    ateIt: ["Ada"], rating: 4, spiceLevelRight: "just-right",
+    wouldMakeAgain: true, hadLeftovers: false, createdAt: new Date().toISOString(),
+  }];
+  const profile = buildProfile(household, kids, prefs(), once);
+  const curry = RECIPE_LIBRARY.find((r) => r.id === "lib-thai-green-curry")!;
+  const scored = scoreRecipe(curry, profile, produce);
+  assert.ok(
+    !scored!.warnings.some((w) => w.includes("Sol")),
+    "a single skipped meal shouldn't label a child a fussy eater",
+  );
 });

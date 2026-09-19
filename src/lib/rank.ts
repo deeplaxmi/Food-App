@@ -56,9 +56,18 @@ export interface HouseholdProfile {
   signalStrength: number;
   /** Names of anyone under one. Honey is a hard exclusion for them. */
   babies: string[];
-  /** Names of anyone under four, for choking-hazard guidance. */
+  /** Names of anyone under four, for plain-portion suggestions. */
   littleOnes: string[];
+  /**
+   * Per person, how often they've actually eaten each kind of dish.
+   * name -> form -> { ate, skipped }. This is what tells us whether a
+   * particular child eats curry, rather than guessing it from their age.
+   */
+  plateHistory: Map<string, Map<string, { ate: number; skipped: number }>>;
 }
+
+/** Times a person must have met a dish shape before we read anything into it. */
+const PLATE_HISTORY_THRESHOLD = 2;
 
 const heatIndex = (h: HeatTolerance) => HEAT_LEVELS.indexOf(h);
 
@@ -179,6 +188,24 @@ export function buildProfile(
     }
   }
 
+  // Who actually ate what. Far better evidence than anyone's age.
+  const plateHistory = new Map<string, Map<string, { ate: number; skipped: number }>>();
+  for (const f of feedback) {
+    if (f.kind !== "cooked") continue;
+    const recipe = byId.get(f.recipeId);
+    // An empty list means they didn't tell us, which is not the same as nobody eating.
+    if (!recipe || f.ateIt.length === 0) continue;
+
+    for (const member of members) {
+      const forMember = plateHistory.get(member.name) ?? new Map();
+      const tally = forMember.get(recipe.form) ?? { ate: 0, skipped: 0 };
+      if (f.ateIt.includes(member.name)) tally.ate += 1;
+      else tally.skipped += 1;
+      forMember.set(recipe.form, tally);
+      plateHistory.set(member.name, forMember);
+    }
+  }
+
   const babies = members.filter((m) => m.ageStage === "baby").map((m) => m.name);
   const littleOnes = members
     .filter((m) => m.ageStage === "baby" || m.ageStage === "toddler")
@@ -206,6 +233,7 @@ export function buildProfile(
     signalStrength,
     babies,
     littleOnes,
+    plateHistory,
   };
 }
 
@@ -414,6 +442,28 @@ export function scoreRecipe(
 
   // 8. Don't fall back on the same three shapes for every household.
   if (GENERIC_FORMS.has(recipe.form) && fans.length === 0) score -= 10;
+
+  // What each person has actually eaten, which beats guessing from their age.
+  const eaters: string[] = [];
+  const refusers: string[] = [];
+  for (const [name, byForm] of profile.plateHistory) {
+    const tally = byForm.get(recipe.form);
+    if (!tally) continue;
+    const seen = tally.ate + tally.skipped;
+    if (seen < PLATE_HISTORY_THRESHOLD) continue;
+    if (tally.skipped === 0) eaters.push(name);
+    else if (tally.ate === 0) refusers.push(name);
+  }
+  if (eaters.length) {
+    score += eaters.length * 7;
+    preferencesConsidered.push(`${formatNames(eaters)} ${eaters.length === 1 ? "has" : "have"} eaten this kind of thing before`);
+  }
+  if (refusers.length) {
+    score -= refusers.length * 16;
+    warnings.push(
+      `${formatNames(refusers)} ${refusers.length === 1 ? "hasn't" : "haven't"} eaten a dish like this before.`,
+    );
+  }
 
   if (profile.littleOnes.length > 0 && recipe.toddlerOption) {
     score += 8;
