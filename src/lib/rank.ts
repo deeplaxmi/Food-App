@@ -217,47 +217,20 @@ export function buildProfile(
 const UNSAFE_UNDER_ONE = ["honey"];
 
 /**
- * Whole, firm, round or hard foods are the classic choking shapes for under
- * fours. We don't remove the recipe -- these are fine when cut properly --
- * but we say so, by name, on the recipe itself.
+ * What a small child could eat from this meal.
+ *
+ * This is cooking logistics, not nutrition or safety advice: most families
+ * already pull a plain portion aside before the sauce or spice goes on, and
+ * the recipe author is the one who knows where that moment is. We deliberately
+ * say nothing about what a child should eat, how much, or when.
  */
-const CHOKING_SHAPES: { match: string[]; advice: string }[] = [
-  { match: ["grapes", "cherry tomatoes", "cherries"], advice: "quarter them lengthways" },
-  { match: ["peanuts", "almonds", "cashews", "walnuts", "pine nuts", "nuts"], advice: "chop finely or leave out" },
-  { match: ["carrots", "celery", "apples", "pears"], advice: "cook until soft, or grate raw" },
-  { match: ["sausages", "hot dogs"], advice: "cut lengthways, not into coins" },
-  { match: ["popcorn", "olives"], advice: "not suitable whole" },
-];
-
-export interface LittleOnesNote {
-  /** Ingredients that must not be served to a child under one. */
-  unsafeForBabies: string[];
-  /** Practical cutting advice, e.g. "grapes -- quarter them lengthways". */
-  chokingAdvice: string[];
-}
-
-/** Age-specific guidance for a recipe, given who is at the table. */
-export function littleOnesNote(recipe: Recipe, profile: HouseholdProfile): LittleOnesNote | null {
+export function toddlerOption(
+  recipe: Recipe,
+  profile: HouseholdProfile,
+): { who: string[]; note: string } | null {
   if (profile.littleOnes.length === 0) return null;
-
-  const names = [
-    ...recipe.produceUsed.map((p) => p.name),
-    ...recipe.otherIngredients.map((o) => o.name),
-  ].map((n) => n.toLowerCase());
-
-  const unsafeForBabies =
-    profile.babies.length > 0
-      ? UNSAFE_UNDER_ONE.filter((item) => names.some((n) => n.includes(item)))
-      : [];
-
-  const chokingAdvice: string[] = [];
-  for (const { match, advice } of CHOKING_SHAPES) {
-    const found = match.find((item) => names.some((n) => n.includes(item)));
-    if (found) chokingAdvice.push(`${found} — ${advice}`);
-  }
-
-  if (unsafeForBabies.length === 0 && chokingAdvice.length === 0) return null;
-  return { unsafeForBabies, chokingAdvice };
+  if (!recipe.toddlerOption) return null;
+  return { who: profile.littleOnes, note: recipe.toddlerOption };
 }
 
 function recipeIngredientNames(recipe: Recipe): string[] {
@@ -441,6 +414,13 @@ export function scoreRecipe(
 
   // 8. Don't fall back on the same three shapes for every household.
   if (GENERIC_FORMS.has(recipe.form) && fans.length === 0) score -= 10;
+
+  if (profile.littleOnes.length > 0 && recipe.toddlerOption) {
+    score += 8;
+    preferencesConsidered.push(
+      `There's an easy plain portion for ${formatNames(profile.littleOnes)}`,
+    );
+  }
 
   if (profile.lovedRecipeIds.has(recipe.id)) {
     score += 14;

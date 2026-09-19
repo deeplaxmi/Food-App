@@ -156,6 +156,12 @@ export interface Recipe {
   source: "library" | "ai-generated";
   sourceNote: string;
   imageUrl?: string;
+  /**
+   * How to pull a plain portion aside for a small child. Cooking logistics,
+   * not nutrition advice -- written by whoever wrote the recipe, because they
+   * know where in the method that moment is.
+   */
+  toddlerOption?: string;
 }
 
 export type RecommendationSlot = "best-match" | "fastest" | "saves-most";

@@ -187,7 +187,7 @@ export default function OnboardingPage() {
         subtitle={
           [
             "This is just so we can size recipes properly.",
-            "First names or nicknames are fine. Ages matter — babies and toddlers need different food.",
+            "First names or nicknames are fine. Ages help us size portions and suggest something a small child will actually eat.",
             "This is the one thing we never guess at. We'll never suggest a recipe containing these.",
             "Skip anyone you're not sure about — you can add this later.",
             "We'll keep weeknight suggestions inside this.",
@@ -232,7 +232,15 @@ export default function OnboardingPage() {
                     autoFocus={i === 0}
                   />
                 </Field>
-                <Field group label="How old?">
+                <Field
+                  group
+                  label="How old?"
+                  hint={
+                    i === 0
+                      ? "We use this for portions and for suggesting plainer options — we don't give advice on feeding children."
+                      : undefined
+                  }
+                >
                   <div className="flex flex-wrap gap-2">
                     {AGE_STAGES.map((stage) => (
                       <Chip

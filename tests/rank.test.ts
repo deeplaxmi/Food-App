@@ -4,8 +4,8 @@ import { test } from "node:test";
 import {
   buildProfile,
   checkHardExclusions,
-  littleOnesNote,
   recommend,
+  toddlerOption,
   type AvailableItem,
 } from "../src/lib/rank";
 import { RECIPE_LIBRARY } from "../src/lib/recipes/library";
@@ -380,18 +380,19 @@ test("honey is fine once the youngest is a toddler", () => {
   assert.equal(checkHardExclusions(withHoney, profile).excluded, false);
 });
 
-test("choking shapes are flagged by name for under-fours", () => {
+test("a plain portion is offered when there's a little one, and not otherwise", () => {
   const withToddler: HouseholdMember[] = [
     { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
     { id: "m2", householdId: "h1", name: "Bo", isChild: true, ageStage: "toddler", createdAt: "" },
   ];
   const profile = buildProfile(household, withToddler, prefs(), []);
-  const slaw = RECIPE_LIBRARY.find((r) => r.id === "lib-carrot-peanut-noodles")!;
-  const note = littleOnesNote(slaw, profile);
-  assert.ok(note, "expected guidance for a household with a toddler");
-  assert.ok(note!.chokingAdvice.some((a) => a.includes("peanuts")));
+  const pasta = RECIPE_LIBRARY.find((r) => r.id === "lib-spinach-ricotta-bake")!;
 
-  // Households without small children aren't shown any of this.
+  const option = toddlerOption(pasta, profile);
+  assert.ok(option, "expected a plain-portion note for a household with a toddler");
+  assert.deepEqual(option!.who, ["Bo"]);
+
+  // Households without small children are shown none of this.
   const adultsOnly = buildProfile(household, members, prefs(), []);
-  assert.equal(littleOnesNote(slaw, adultsOnly), null);
+  assert.equal(toddlerOption(pasta, adultsOnly), null);
 });

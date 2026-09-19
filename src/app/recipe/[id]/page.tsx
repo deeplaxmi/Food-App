@@ -14,7 +14,7 @@ import {
   Spinner,
 } from "@/components/ui";
 import { track } from "@/lib/analytics";
-import { buildProfile, explain, littleOnesNote, scoreRecipe } from "@/lib/rank";
+import { buildProfile, explain, scoreRecipe, toddlerOption } from "@/lib/rank";
 import type { RecommendationSlot } from "@/lib/types";
 import { bandedItems, getRecipeFrom, scanById } from "@/lib/selectors";
 
@@ -44,10 +44,10 @@ function RecipeScreen() {
   const recipe = getRecipeFrom(data, recipeId);
 
   const slot = (params.get("slot") as RecommendationSlot) ?? "best-match";
-  const littleOnes = useMemo(() => {
+  const forLittleOnes = useMemo(() => {
     if (!recipe || !data.household) return null;
     const profile = buildProfile(data.household, data.members, data.preferences, data.feedback);
-    return { note: littleOnesNote(recipe, profile), who: profile.littleOnes };
+    return toddlerOption(recipe, profile);
   }, [recipe, data]);
   const scored = useMemo(() => {
     if (!recipe || !data.household || !scan) return null;
@@ -118,36 +118,17 @@ function RecipeScreen() {
           {recipe.source === "ai-generated" && <Pill tone="ai">Written by AI</Pill>}
         </div>
 
-        {littleOnes?.note && (
-          <div className="rounded-3xl border-2 border-squash bg-squash-50 p-5">
-            <h2 className="text-[19px] font-bold text-[#8a5a1c]">
-              Serving {formatListOf(littleOnes.who)}
+        {forLittleOnes && (
+          <Card>
+            <h2 className="text-[19px] font-bold text-ink">
+              For {formatListOf(forLittleOnes.who)}
             </h2>
-            {littleOnes.note.unsafeForBabies.length > 0 && (
-              <p className="mt-2 text-[16px] font-semibold leading-snug text-[#8a5a1c]">
-                Leave out the {littleOnes.note.unsafeForBabies.join(", ")} — it isn't safe for
-                a child under one.
-              </p>
-            )}
-            {littleOnes.note.chokingAdvice.length > 0 && (
-              <>
-                <p className="mt-2 text-[16px] leading-snug text-[#8a5a1c]">
-                  Cut these differently for small children:
-                </p>
-                <ul className="mt-2 space-y-1.5">
-                  {littleOnes.note.chokingAdvice.map((line) => (
-                    <li key={line} className="text-[16px] leading-snug text-[#8a5a1c]">
-                      • {line}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-            <p className="mt-3 text-[14px] leading-snug text-[#8a5a1c]/80">
-              General guidance only. You know your child; follow your own judgement and your
-              health visitor's advice.
+            <p className="mt-2 text-[16px] leading-snug text-ink">{forLittleOnes.note}</p>
+            <p className="mt-3 text-[14px] leading-snug text-muted">
+              Just a way to serve the same meal. We don't give advice on feeding children —
+              that's between you and your health visitor.
             </p>
-          </div>
+          </Card>
         )}
 
         {scored && scored.unverified.length > 0 && (

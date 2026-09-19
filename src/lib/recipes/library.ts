@@ -49,6 +49,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Lift out a few cubes of paneer and some plain rice before the spices go in.",
   },
   {
     id: "lib-veggie-quesadillas",
@@ -87,6 +88,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Make one with just cheese, cut into strips.",
   },
   {
     id: "lib-carrot-zucchini-traybake",
@@ -124,6 +126,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Set aside some carrot and zucchini before the cumin, and serve with plain yogurt.",
   },
   {
     id: "lib-thai-carrot-soup",
@@ -161,6 +164,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["shellfish", "fish"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe. Most red curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
+    toddlerOption: "Ladle out a portion before the curry paste — it's just carrot and coconut then.",
   },
   {
     id: "lib-spinach-ricotta-bake",
@@ -198,6 +202,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Keep back a scoop of plain pasta with ricotta before it's mixed with the tomato.",
   },
   {
     id: "lib-mushroom-pappardelle",
@@ -235,6 +240,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Set aside plain buttered pasta with a little parmesan before the sauce.",
   },
   {
     id: "lib-chana-saag",
@@ -275,6 +281,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: [],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Take out some chickpeas and rice before the spices, and mash the chickpeas a little.",
   },
   {
     id: "lib-zucchini-fritters",
@@ -311,6 +318,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "egg", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Fritters are good finger food. Cut into strips and serve with plain yogurt.",
   },
   {
     id: "lib-thai-green-curry",
@@ -349,6 +357,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["soy", "gluten", "wheat", "shellfish", "fish"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe. Most green curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
+    toddlerOption: "Plain jasmine rice and a few pieces of tofu, set aside before the paste.",
   },
   {
     id: "lib-mexican-rice-bowl",
@@ -387,6 +396,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Rice, beans and cheese in a bowl, no spice mix.",
   },
   {
     id: "lib-minestrone",
@@ -425,6 +435,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Scoop out some pasta and soft vegetables before adding the stock's seasoning.",
   },
   {
     id: "lib-aloo-gobi",
@@ -463,6 +474,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: [],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Take out some potato and cauliflower before the spices go on.",
   },
   {
     id: "lib-pad-see-ew",
@@ -500,6 +512,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["egg", "soy", "shellfish", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain noodles with a little egg, set aside before the sauce.",
   },
   {
     id: "lib-shakshuka",
@@ -537,6 +550,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "egg", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "A soft-cooked egg and some bread, kept out of the peppers.",
   },
   {
     id: "lib-mushroom-ragu-polenta",
@@ -574,6 +588,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Soft polenta with butter and parmesan is very toddler-friendly on its own.",
   },
   {
     id: "lib-sheet-pan-fajitas",
@@ -612,6 +627,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["gluten", "wheat", "dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain chicken and a warm tortilla, before the spice mix.",
   },
   {
     id: "lib-carrot-peanut-noodles",
@@ -650,6 +666,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["peanut", "soy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain noodles with a little oil. Keep the peanuts well away.",
   },
   {
     id: "lib-spinach-dal",
@@ -687,6 +704,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Dal is soft and mild already — a small bowl with rice works as is.",
   },
   {
     id: "lib-mushroom-spinach-orzo",
@@ -722,6 +740,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Orzo with butter and parmesan, lifted out before the mushrooms.",
   },
   {
     id: "lib-roasted-veg-tacos",
@@ -758,6 +777,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Roasted squash is soft and sweet. Serve a few pieces with a plain tortilla.",
   },
   {
     id: "lib-tomato-basil-gnocchi",
@@ -792,6 +812,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Gnocchi with mozzarella, before the tomatoes go in.",
   },
   {
     id: "lib-miso-roasted-veg-noodles",
@@ -829,6 +850,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["soy", "gluten", "wheat", "sesame"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain noodles and roasted carrot, set aside before the miso glaze.",
   },
   {
     id: "lib-avocado-tostadas",
@@ -866,6 +888,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Mashed avocado on a soft tortilla, no lime or cumin.",
   },
   {
     id: "lib-peach-halloumi-salad",
@@ -900,6 +923,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Soft peach slices and a little halloumi, cut small.",
   },
   {
     id: "lib-orange-chicken-traybake",
@@ -934,6 +958,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: [],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain chicken and soft potato, before the pan juices.",
   },
   {
     id: "lib-banana-oat-pancakes",
@@ -966,6 +991,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "egg"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Pancakes cut into strips are ideal finger food. Skip the syrup.",
   },
   {
     id: "lib-berry-baked-oatmeal",
@@ -1002,6 +1028,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy", "egg"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Soft, mild and easy to spoon — serve a small portion as it is.",
   },
   {
     id: "lib-mango-black-bean-bowls",
@@ -1039,6 +1066,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: [],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Rice, beans and soft mango, no lime.",
   },
   {
     id: "lib-apple-sausage-traybake",
@@ -1073,6 +1101,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["gluten", "wheat"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe. Most sausages contain wheat rusk -- check yours if that matters.",
+    toddlerOption: "Soft roasted apple and potato. Cut sausage lengthways, never into coins.",
   },
   {
     id: "lib-strawberry-spinach-salad",
@@ -1108,6 +1137,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     containsAllergens: ["dairy"],
     source: "library",
     sourceNote: "Kitchen-tested house recipe",
+    toddlerOption: "Plain chicken with soft strawberry, cut small.",
   },
 ];
 
