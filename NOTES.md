@@ -45,15 +45,30 @@ Two traps that cost hours:
 marketplace, so all 17 variables are already injected into the Vercel
 project. Schema is applied (12 tables, row-level security, indexes).
 
-**Blocked:** enabling *Allow anonymous sign-ins* in Supabase →
-Authentication → Sign In / Providers failed with an auth error, possibly
-because a marketplace-provisioned project is owned by a Vercel-created
-organisation. Until that's on, `signInAnonymously()` fails, nothing syncs,
-and the app silently stays on-device. **Check whether the toggle is now on
-before debugging further.** If it can't be enabled, the fallback is to
-generate a household id client-side instead of relying on Supabase auth —
-but pair that with a narrower RLS policy, or households can read each
-other's rows.
+**Blocked:** enabling *Allow anonymous sign-ins* fails with
+`Failed to update settings: failed to update Auth config`. This is a
+Supabase-side error, seen on marketplace-provisioned projects where the
+organisation is owned by Vercel rather than the user. Until it's on,
+`signInAnonymously()` fails, nothing syncs, and the app quietly stays
+on-device.
+
+**Recommended fix: stop depending on Supabase Auth.** Move syncing behind
+our own API route instead of talking to Supabase from the browser:
+
+- The client generates a random household token on first run and keeps it
+  in `localStorage`. No email, no signup — important for a beta.
+- `GET/PUT /api/household` takes that token, and the server reads and
+  writes `household_documents` using the service role key (already set in
+  Vercel).
+- The server scopes every query to the token, so one household can never
+  read another's row. The anon key stops being used from the browser at
+  all, which is strictly safer than the current design.
+- Row-level security stays on as defence in depth; the service role
+  bypasses it, and nothing else can reach the table.
+
+This removes the auth dependency, needs no dashboard permissions we do not
+have, and keeps testers frictionless. Roughly an API route plus swapping
+`src/lib/store/supabase.ts` to call it — about sixty lines.
 
 **Keys** — `ANTHROPIC_API_KEY` is set and photo scanning works. Every scan
 is a real API call; set a spend limit before sharing widely.
