@@ -17,9 +17,14 @@ Hard rules, in order of importance:
 2. Give complete, real quantities for every ingredient and steps someone can actually follow.
 3. Do not give food-safety, storage or reheating advice, and never suggest that questionable produce is fine to use.
 4. Respect the stated heat tolerance and the cooking time limit.
-5. Use a meaningful amount of the listed produce -- a garnish does not count.
+5. The produce you are given must BE the dish, not a garnish on someone else's dish. If the recipe would still make sense with that produce left out, it is the wrong recipe.
+6. Do not take a familiar dish and scatter the produce over it. "Chickpea tacos with a little avocado" is exactly the failure -- the avocado is decoration. Build the dish around the produce instead.
+7. Use a real, substantial quantity of it: whole fruit, a full bunch, several pieces. Not "1 tbsp, chopped, to garnish".
+8. If you genuinely cannot build a good dish around this produce, return an empty list. An honest nothing is far better than a plausible recipe nobody should cook.
 
-Write the way a good home cook talks: plain, specific, no marketing. Avoid defaulting to a generic stir-fry, soup or smoothie unless it is genuinely the best fit.`;
+Write the way a good home cook talks: plain, specific, no marketing. Avoid defaulting to a generic stir-fry, soup or smoothie unless it is genuinely the best fit.
+
+Remember that nobody has ever cooked what you are about to write. Someone will shop for it and feed it to their children. Prefer a simple thing that certainly works over a clever thing that might not.`;
 
 const SCHEMA = {
   type: "object",
@@ -77,6 +82,11 @@ const SCHEMA = {
   required: ["recipes"],
   additionalProperties: false,
 } as const;
+
+interface GeneratedRecipe {
+  title?: string;
+  produceUsed?: { name?: string; amount?: string }[];
+}
 
 export async function POST(request: Request) {
   if (!isAiConfigured()) {
@@ -143,8 +153,31 @@ export async function POST(request: Request) {
     const text = firstText(response.content);
     if (!text) return NextResponse.json({ recipes: [] });
 
-    const parsed = JSON.parse(text) as { recipes?: unknown[] };
-    return NextResponse.json({ recipes: parsed.recipes ?? [] });
+    const parsed = JSON.parse(text) as { recipes?: GeneratedRecipe[] };
+    const wanted = produce.map((p) => p.name.toLowerCase());
+
+    // Drop anything that treats the household's produce as decoration. The model
+    // is told not to; this is the check that it actually didn't.
+    const kept = (parsed.recipes ?? []).filter((recipe) => {
+      const used = (recipe?.produceUsed ?? []).map((p) => String(p?.name ?? "").toLowerCase());
+      const centres = used.some((name) =>
+        wanted.some((w) => name.includes(w) || w.includes(name)),
+      );
+      if (!centres) {
+        console.warn("[recipes] dropped: uses none of the scanned produce", recipe?.title);
+        return false;
+      }
+      const garnishOnly = (recipe?.produceUsed ?? []).every((p) =>
+        /garnish|to serve|sprinkle|pinch|a few leaves/i.test(String(p?.amount ?? "")),
+      );
+      if (garnishOnly) {
+        console.warn("[recipes] dropped: produce used only as garnish", recipe?.title);
+        return false;
+      }
+      return true;
+    });
+
+    return NextResponse.json({ recipes: kept });
   } catch (error) {
     if (error instanceof Anthropic.APIError) {
       console.error("[recipes] generation failed", error.status, error.message);
