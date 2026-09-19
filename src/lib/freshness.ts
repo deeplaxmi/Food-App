@@ -57,6 +57,8 @@ const SHELF_LIFE_DAYS: Record<string, number> = {
   "leek": 12,
   "brussels sprouts": 10,
   "cabbage": 21,
+  "fennel": 10,
+  "pears": 12,
   // Hardy roots and alliums keep longest.
   "carrots": 21,
   "beets": 18,

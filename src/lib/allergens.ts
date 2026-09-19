@@ -167,8 +167,23 @@ const INGREDIENT_RULES: Record<string, Allergen[]> = {
   "ground cumin": [], "ground coriander": [], "ground turmeric": [],
   "garam masala": [], "smoked paprika": [], paprika: [],
   "dried oregano": [], "dried thyme": [], "chili flakes": [],
-  "chicken thighs": [], chicken: [], beef: [], pork: [], lamb: [],
-  avocado: [], "butternut squash ": [], water: [],
+  "chicken thighs": [], "chicken breasts": [], chicken: [], beef: [],
+  pork: [], lamb: [], water: [],
+  // Fruit -- none of it carries an allergen we track, but it has to be
+  // recognised or an allergy household gets a spurious "we couldn't check
+  // this" warning on every fruit recipe.
+  avocado: [], avocados: [], peaches: [], peach: [], nectarines: [],
+  oranges: [], orange: [], bananas: [], banana: [], apples: [], apple: [],
+  pears: [], pear: [], mango: [], mangoes: [], strawberries: [],
+  blueberries: [], raspberries: [], blackberries: [], grapes: [],
+  cherries: [], plums: [], melon: [], pineapple: [], papaya: [], figs: [],
+  fennel: [], cucumber: [],
+  // Store-cupboard items the fruit recipes use.
+  "rolled oats": [], oats: [], "baking powder": [], "ground cinnamon": [],
+  cinnamon: [], "balsamic vinegar": [], vinegar: [],
+  "wholegrain mustard": [], mustard: [],
+  // Sausages conventionally contain wheat rusk, so treat them as gluten.
+  "pork sausages": ["gluten"], sausages: ["gluten"], sausage: ["gluten"],
 };
 
 /** Words that carry no meaning for matching and are stripped first. */
