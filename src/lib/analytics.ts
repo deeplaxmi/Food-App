@@ -16,6 +16,27 @@ export type AnalyticsEvent =
 
 const SEEN_KEY = "usefirst:analytics:seen";
 const LAST_VISIT_KEY = "usefirst:analytics:last-visit";
+const HOUSEHOLD_KEY = "usefirst:analytics:household";
+
+/**
+ * A random id for this browser so events can be grouped into journeys without
+ * identifying anyone. It is not tied to a name, email or the household profile.
+ */
+function anonymousHouseholdId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const existing = window.localStorage.getItem(HOUSEHOLD_KEY);
+    if (existing) return existing;
+    const fresh =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+    window.localStorage.setItem(HOUSEHOLD_KEY, fresh);
+    return fresh;
+  } catch {
+    return null;
+  }
+}
 
 function seenEvents(): Set<string> {
   if (typeof window === "undefined") return new Set();
@@ -28,7 +49,12 @@ function seenEvents(): Set<string> {
 
 export function track(event: AnalyticsEvent, properties: Record<string, unknown> = {}): void {
   if (typeof window === "undefined") return;
-  const payload = { event, properties, at: new Date().toISOString() };
+  const payload = {
+    event,
+    properties,
+    householdId: anonymousHouseholdId(),
+    at: new Date().toISOString(),
+  };
 
   try {
     const seen = seenEvents();

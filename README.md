@@ -48,21 +48,49 @@ which are server-only route handlers — **it is never bundled into client code.
 
 Without it, `/api/vision/analyze` returns a 503 and the UI offers manual entry instead.
 
-### Sync across devices — Supabase
+### Sync across devices, and learn from testers — Supabase
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...      # server-only, see below
 ```
 
-1. Create a Supabase project.
+1. Create a Supabase project — **a separate one per product.** Sharing a project across two
+   apps also shares `auth.users`, which couples them in a way that is painful to undo.
 2. Run `supabase/schema.sql` in the SQL editor.
 3. Enable **anonymous sign-ins** under Authentication → Providers, so a household can exist
    before anyone picks a password.
+4. Add all three variables to your host and redeploy.
 
-The anon key is public by design; row-level security is what protects the data, and every
-table in the schema is locked to the owning user. **Never put the service role key in a
-`NEXT_PUBLIC_` variable.**
+The first two are public by design; row-level security protects the data, and every table is
+locked to the owning user. The third bypasses RLS and is read only inside
+`src/app/api/analytics/route.ts`. **Never give it a `NEXT_PUBLIC_` prefix** — that publishes
+full database access to every visitor.
+
+Without the service role key the app still works; analytics fall back to the server log.
+
+#### What you can query once testers are using it
+
+```sql
+-- Where people drop out of the core loop
+select event, count(*) from analytics_events group by event order by count desc;
+
+-- Households that scanned but never cooked
+select properties->>'householdId' as household
+from analytics_events where event = 'first_scan'
+except
+select properties->>'householdId'
+from analytics_events where event = 'recipe_cooked';
+
+-- Why meals get rejected
+select properties->>'reason' as reason, count(*)
+from analytics_events where event = 'feedback_submitted'
+group by reason order by count desc;
+```
+
+Events carry a random per-browser `householdId` so journeys can be followed without
+identifying anyone. No names, emails, IPs or free text are recorded.
 
 ---
 
