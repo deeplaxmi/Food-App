@@ -1,4 +1,5 @@
-import { BAND_ORDER, estimateFreshness, typicalItemValue } from "./freshness";
+import { BAND_ORDER, estimateFreshness } from "./freshness";
+import { totalValue } from "./prices";
 import { buildProfile, recommend, type AvailableItem, type Suggestion } from "./rank";
 import { RECIPE_LIBRARY } from "./recipes/library";
 import type { AppData, DetectedIngredient, ProduceScan, Recipe, UrgencyBand } from "./types";
@@ -103,14 +104,15 @@ export function impactStats(data: AppData): ImpactStats {
   };
 }
 
-export function estimateSaved(names: string[]): { grams: number; usd: number } {
-  return names.reduce(
-    (acc, name) => {
-      const { grams, usd } = typicalItemValue(name);
-      return { grams: acc.grams + grams, usd: acc.usd + usd };
-    },
-    { grams: 0, usd: 0 },
-  );
+/**
+ * Uses the quantity the household actually entered, priced conservatively.
+ * See prices.ts for why every figure errs low.
+ */
+export function estimateSaved(
+  items: { name: string; quantity: string }[],
+): { grams: number; usd: number } {
+  const { grams, usd } = totalValue(items);
+  return { grams, usd };
 }
 
 /** True once the household has answered enough to get tailored results. */

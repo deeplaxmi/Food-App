@@ -124,20 +124,23 @@ export default function DashboardPage() {
           <section>
             <h2 className="mb-2.5 text-[19px] font-bold text-ink">Since you started</h2>
             <div className="grid grid-cols-2 gap-3">
-              <Stat value={String(stats.mealsCooked)} label="Meals cooked" />
-              <Stat value={String(stats.ingredientsUsed)} label="Ingredients used up" />
+              {/* The first two are counts of things that actually happened. */}
+              <Stat value={String(stats.mealsCooked)} label="Dinners cooked at home" tone="leaf" />
+              <Stat value={String(stats.ingredientsUsed)} label="Ingredients used up" tone="leaf" />
+              {/* These two are estimates, and the labels say what we can defend:
+                  produce that got eaten rather than binned -- not money conjured. */}
               <Stat
                 value={stats.gramsRescued >= 1000
                   ? `${(stats.gramsRescued / 1000).toFixed(1)} kg`
                   : `${stats.gramsRescued} g`}
-                label="Food rescued"
-                tone="leaf"
+                label="Produce used in time"
               />
-              <Stat value={`$${stats.dollarsSaved.toFixed(2)}`} label="Money saved" tone="leaf" />
+              <Stat value={`$${stats.dollarsSaved.toFixed(2)}`} label="Worth of produce, not binned" />
             </div>
             <p className="mt-2.5 text-[13px] leading-snug text-muted">
-              Food rescued and money saved are rough estimates, based on the ingredients you told
-              us you used and typical shop prices.
+              The first two are counts of what you actually did. The bottom two are conservative
+              estimates: the quantities you told us you used, priced at the low end of ordinary
+              shop prices. We round down, so the real figure is likely a little higher.
             </p>
           </section>
 

@@ -104,7 +104,9 @@ function FeedbackScreen() {
             )
           : [];
       const consumedIds = new Set(consumed.map((c) => c.id));
-      const saved = estimateSaved(consumed.map((c) => c.name));
+      const saved = estimateSaved(
+        consumed.map((c) => ({ name: c.name, quantity: c.quantity })),
+      );
 
       return {
         ...draft,
