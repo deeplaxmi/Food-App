@@ -44,6 +44,11 @@ export interface HouseholdProfile {
   dislikes: Map<string, string[]>;
   /** cuisine (lowercase) -> how many members named it. */
   cuisineFans: Map<string, string[]>;
+  /**
+   * How concentrated those choices are. Picking one cuisine out of fifteen is
+   * a much stronger statement than picking eight, and should weigh accordingly.
+   */
+  cuisineFocus: number;
   /** The most heat-sensitive person sets the ceiling. */
   heatCeiling: HeatTolerance;
   texturePreferences: Map<TexturePreference, string[]>;
@@ -211,6 +216,11 @@ export function buildProfile(
     .filter((m) => m.ageStage === "baby" || m.ageStage === "toddler")
     .map((m) => m.name);
 
+  // One cuisine chosen is a near-rule; a long list is a mild lean.
+  const distinctCuisines = cuisineFans.size;
+  const cuisineFocus =
+    distinctCuisines === 0 ? 1 : Math.min(3.5, 1 + 5 / Math.max(distinctCuisines, 1));
+
   const coverage = members.length ? answered / members.length : 0;
   const signalStrength = Math.min(1, coverage * 0.7 + Math.min(feedback.length, 3) * 0.1);
 
@@ -224,6 +234,7 @@ export function buildProfile(
     requiredDietaryTags,
     dislikes,
     cuisineFans,
+    cuisineFocus,
     heatCeiling,
     texturePreferences,
     rejectedRecipeIds,
@@ -386,8 +397,13 @@ export function scoreRecipe(
   const cuisineKey = recipe.cuisine.toLowerCase();
   const fans = profile.cuisineFans.get(cuisineKey) ?? [];
   if (fans.length > 0) {
-    score += 10 + fans.length * 4;
+    score += (10 + fans.length * 4) * profile.cuisineFocus;
     preferencesConsidered.push(`${recipe.cuisine} is a favourite of ${formatNames(fans)}`);
+  } else if (profile.cuisineFans.size > 0 && profile.cuisineFocus >= 2.5) {
+    // They named one or two cuisines and meant it. Still shown -- a meal that
+    // clears a lot of produce can earn its place -- but it has to work for it.
+    score -= 22;
+    warnings.push(`${recipe.cuisine}, not one of the cuisines you picked.`);
   }
   score += profile.cuisineBoost.get(cuisineKey) ?? 0;
   score += profile.formBoost.get(recipe.form) ?? 0;
@@ -517,6 +533,17 @@ export function recommend(
     .map((r) => scoreRecipe(r, profile, available))
     .filter((s): s is ScoredRecipe => s !== null);
 
+  // "Fastest" has to mean the fastest of the meals that actually suit this
+  // household, not the fastest thing that happens to be edible. Without this,
+  // a family who only eat Indian can be shown a quesadilla purely because it
+  // is quick -- and worse, have it labelled the best match for them.
+  const byScore = [...scored].sort((a, b) => b.score - a.score);
+  const top = byScore[0]?.score ?? 0;
+  const cutoff = top > 0 ? top * 0.5 : Number.NEGATIVE_INFINITY;
+  const suitable = byScore.filter((s) => s.score >= cutoff);
+  // Always keep enough candidates to fill three slots with some variety.
+  const pool2Candidates = suitable.length >= 5 ? suitable : byScore.slice(0, 5);
+
   // Step 1: gather three candidates worth showing -- the strongest overall, the
   // quickest, and the one that clears the most produce -- preferring different
   // dish shapes so the household isn't offered three pastas.
@@ -524,11 +551,22 @@ export function recommend(
   const takenIds = new Set<string>();
   const takenForms = new Set<string>();
 
+  // Variety of dish shape is worth having, but not at the cost of a meal that
+  // actually fits. A household who only eat Indian would rather have two
+  // curries than a traybake they didn't ask for.
+  const FORM_VARIETY_TOLERANCE = 25;
+
   const pick = (compare: (a: ScoredRecipe, b: ScoredRecipe) => number) => {
-    const remaining = scored.filter((s) => !takenIds.has(s.recipe.id));
+    const remaining = pool2Candidates.filter((s) => !takenIds.has(s.recipe.id));
     if (remaining.length === 0) return;
+
+    const bestAny = [...remaining].sort(compare)[0];
     const fresh = remaining.filter((s) => !takenForms.has(s.recipe.form));
-    const best = [...(fresh.length ? fresh : remaining)].sort(compare)[0];
+    const bestFresh = fresh.length ? [...fresh].sort(compare)[0] : null;
+    const best =
+      bestFresh && bestFresh.score >= bestAny.score - FORM_VARIETY_TOLERANCE
+        ? bestFresh
+        : bestAny;
     takenIds.add(best.recipe.id);
     takenForms.add(best.recipe.form);
     chosen.push(best);
