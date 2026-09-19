@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #fbf7f0;
+  --color-surface: #ffffff;
+  --color-ink: #211e1a;
+  --color-muted: #6f675d;
+  --color-hairline: #e9e1d5;
+
+  --color-leaf-50: #eef7ef;
+  --color-leaf-100: #d7ecda;
+  --color-leaf-300: #8cc79a;
+  --color-leaf-500: #3f8f56;
+  --color-leaf-600: #33753f;
+  --color-leaf-700: #285c33;
+
+  --color-tomato: #d1503d;
+  --color-tomato-50: #fcefec;
+  --color-squash: #e08a37;
+  --color-squash-50: #fdf2e5;
+  --color-citrus: #d8a92a;
+
+  --font-sans: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Inter, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  /* Room for the fixed bottom bar plus the iPhone home indicator. */
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior-y: none;
+}
+
+/* Keeps iOS from zooming when a text field is focused. */
+input,
+textarea,
+select,
+button {
+  font-size: 16px;
+  font-family: inherit;
+}
+
+@utility card {
+  background: var(--color-surface);
+  border-radius: 1.5rem;
+  border: 1px solid var(--color-hairline);
+  box-shadow: 0 1px 2px rgb(33 30 26 / 0.04), 0 8px 24px -16px rgb(33 30 26 / 0.18);
+}
+
+@utility tap {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
