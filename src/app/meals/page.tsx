@@ -54,7 +54,7 @@ function MealsScreen() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             produce: items.map((i) => ({ name: i.name, band: i.band })),
-            mustNotContain: [...profile.hardExcludedAllergens],
+            mustNotContain: [...profile.allergens],
             requiredDiets: [...profile.requiredDietaryTags],
             dislikes: [...profile.dislikes.keys()],
             cuisines: [...profile.cuisineFans.keys()],

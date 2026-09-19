@@ -106,6 +106,23 @@ function RecipeScreen() {
           {recipe.source === "ai-generated" && <Pill tone="ai">Written by AI</Pill>}
         </div>
 
+        {scored && scored.unverified.length > 0 && (
+          <div className="rounded-3xl border-2 border-squash bg-squash-50 p-5">
+            <h2 className="text-[19px] font-bold text-[#8a5a1c]">Check these yourself</h2>
+            <p className="mt-2 text-[16px] leading-snug text-[#8a5a1c]">
+              We know your household's allergies, but we can't tell what's inside these
+              ingredients. Brands differ, so read the label before you cook:
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {scored.unverified.map((name) => (
+                <li key={name} className="text-[16px] font-semibold text-[#8a5a1c]">
+                  • {name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {recipe.source === "ai-generated" && (
           <Notice tone="warn">
             This recipe was written by AI for the produce you have. Read it through before you

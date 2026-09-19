@@ -1,3 +1,9 @@
+import {
+  ALLERGEN_LABELS,
+  analyseIngredients,
+  parseUserAllergies,
+  type Allergen,
+} from "./allergens";
 import { canonicalName } from "./freshness";
 import { RECIPE_LIBRARY } from "./recipes/library";
 import type {
@@ -30,8 +36,8 @@ export interface HouseholdProfile {
   children: number;
   maxMinutes: number;
   pantry: Set<string>;
-  /** Allergens and medical restrictions. Recipes containing these are removed outright. */
-  hardExcludedAllergens: Set<string>;
+  /** Canonical allergens to exclude on. Derived from ingredients, never from a recipe's own claims. */
+  allergens: Set<Allergen>;
   /** Dietary tags a recipe must carry, e.g. "vegetarian". */
   requiredDietaryTags: Set<string>;
   /** name -> who dislikes it. Ranking signal only. */
@@ -51,34 +57,6 @@ export interface HouseholdProfile {
 }
 
 const heatIndex = (h: HeatTolerance) => HEAT_LEVELS.indexOf(h);
-
-/**
- * Common ways people write an allergy, expanded so "nuts" also catches "peanut"
- * and "dairy" also catches "milk". Erring toward over-matching is correct here:
- * a false exclusion costs one recipe, a false inclusion is a medical incident.
- */
-const ALLERGEN_SYNONYMS: Record<string, string[]> = {
-  dairy: ["dairy", "milk", "cheese", "butter", "cream", "yogurt", "paneer", "ricotta", "mozzarella", "parmesan", "feta", "ghee", "cotija", "sour cream"],
-  milk: ["dairy", "milk", "cheese", "butter", "cream", "yogurt", "paneer"],
-  lactose: ["dairy", "milk", "cheese", "butter", "cream", "yogurt", "paneer"],
-  gluten: ["gluten", "wheat", "flour", "pasta", "bread", "tortilla", "noodle", "orzo", "gnocchi", "couscous", "udon", "soba", "naan", "flatbread"],
-  wheat: ["wheat", "gluten", "flour", "pasta", "bread", "tortilla", "noodle", "orzo"],
-  celiac: ["gluten", "wheat", "flour", "pasta", "bread", "tortilla", "noodle", "orzo"],
-  nuts: ["nut", "peanut", "almond", "cashew", "walnut", "pecan", "pistachio", "hazelnut"],
-  "tree nuts": ["nut", "almond", "cashew", "walnut", "pecan", "pistachio", "hazelnut"],
-  peanut: ["peanut", "nut"],
-  egg: ["egg"],
-  soy: ["soy", "tofu", "miso", "edamame", "soya"],
-  fish: ["fish", "anchovy", "fish sauce"],
-  shellfish: ["shellfish", "shrimp", "prawn", "crab", "lobster", "oyster"],
-  sesame: ["sesame", "tahini"],
-};
-
-function expandAllergen(raw: string): string[] {
-  const key = raw.trim().toLowerCase();
-  if (!key) return [];
-  return ALLERGEN_SYNONYMS[key] ?? [key];
-}
 
 /** Restrictions that translate into a required dietary tag rather than an allergen. */
 const RESTRICTION_TAGS: Record<string, string> = {
@@ -101,7 +79,7 @@ export function buildProfile(
 ): HouseholdProfile {
   const prefOf = new Map(preferences.map((p) => [p.memberId, p]));
 
-  const hardExcludedAllergens = new Set<string>();
+  const allergyEntries: string[] = [];
   const requiredDietaryTags = new Set<string>();
   const dislikes = new Map<string, string[]>();
   const cuisineFans = new Map<string, string[]>();
@@ -115,14 +93,14 @@ export function buildProfile(
     let memberAnswered = 0;
 
     for (const a of p.allergies) {
-      for (const token of expandAllergen(a)) hardExcludedAllergens.add(token);
+      allergyEntries.push(a);
       memberAnswered = 1;
     }
     for (const r of p.dietaryRestrictions) {
       const key = r.trim().toLowerCase();
       const tag = RESTRICTION_TAGS[key];
       if (tag) requiredDietaryTags.add(tag);
-      else for (const token of expandAllergen(key)) hardExcludedAllergens.add(token);
+      else allergyEntries.push(key);
       memberAnswered = 1;
     }
     for (const d of p.dislikes) {
@@ -206,7 +184,7 @@ export function buildProfile(
     children: household.children,
     maxMinutes,
     pantry: new Set(household.pantryStaples.map((s) => canonicalName(s))),
-    hardExcludedAllergens,
+    allergens: parseUserAllergies(allergyEntries),
     requiredDietaryTags,
     dislikes,
     cuisineFans,
@@ -230,26 +208,48 @@ function recipeIngredientNames(recipe: Recipe): string[] {
 export interface ExclusionResult {
   excluded: boolean;
   reason?: string;
+  /** Ingredients we could not check against the allergen map. */
+  unverified: string[];
 }
 
 /**
- * Hard gate. A recipe that trips this is never shown, never scored, never
- * surfaced as a near miss.
+ * The hard gate.
+ *
+ * Allergens are derived from the ingredient list, NOT read from the recipe's
+ * own `containsAllergens` field -- that field has been wrong in hand-written
+ * recipes, and anything generated or fetched is less trustworthy still.
+ *
+ * A derived allergen the household reacts to removes the recipe outright.
+ * An ingredient no rule recognises does not: it is returned as `unverified`
+ * so the household can be told exactly what we could not check, and decide.
  */
-export function checkHardExclusions(recipe: Recipe, profile: HouseholdProfile): ExclusionResult {
-  const haystack = [...recipeIngredientNames(recipe), ...recipe.containsAllergens.map((a) => a.toLowerCase())].join(" | ");
+export function checkHardExclusions(
+  recipe: Recipe,
+  profile: HouseholdProfile,
+): ExclusionResult {
+  const ingredients = [
+    ...recipe.produceUsed.map((p) => p.name),
+    ...recipe.otherIngredients.map((o) => o.name),
+  ];
+  const { hits, unverified } = analyseIngredients(ingredients, profile.allergens);
 
-  for (const allergen of profile.hardExcludedAllergens) {
-    if (haystack.includes(allergen)) {
-      return { excluded: true, reason: `contains ${allergen}` };
-    }
+  if (hits.length > 0) {
+    const { ingredient, allergen } = hits[0];
+    return {
+      excluded: true,
+      reason: `${ingredient} contains ${ALLERGEN_LABELS[allergen]}`,
+      unverified,
+    };
   }
+
   for (const tag of profile.requiredDietaryTags) {
     if (!recipe.dietaryTags.includes(tag)) {
-      return { excluded: true, reason: `not ${tag}` };
+      return { excluded: true, reason: `not ${tag}`, unverified };
     }
   }
-  return { excluded: false };
+
+  // Only worth surfacing when the household actually has something to avoid.
+  return { excluded: false, unverified: profile.allergens.size > 0 ? unverified : [] };
 }
 
 const BAND_WEIGHT: Record<UrgencyBand, number> = {
@@ -269,6 +269,8 @@ export interface ScoredRecipe {
   missingPurchases: string[];
   preferencesConsidered: string[];
   warnings: string[];
+  /** Ingredients we could not verify against the allergen map, for an allergy household. */
+  unverified: string[];
 }
 
 export function scoreRecipe(
@@ -276,7 +278,8 @@ export function scoreRecipe(
   profile: HouseholdProfile,
   available: AvailableItem[],
 ): ScoredRecipe | null {
-  if (checkHardExclusions(recipe, profile).excluded) return null;
+  const gate = checkHardExclusions(recipe, profile);
+  if (gate.excluded) return null;
   if (profile.rejectedRecipeIds.has(recipe.id)) return null;
 
   const availableByName = new Map(available.map((a) => [canonicalName(a.name), a]));
@@ -380,6 +383,7 @@ export function scoreRecipe(
     missingPurchases,
     preferencesConsidered,
     warnings,
+    unverified: gate.unverified,
   };
 }
 

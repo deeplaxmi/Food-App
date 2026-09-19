@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import { buildProfile, checkHardExclusions, recommend, type AvailableItem } from "../src/lib/rank";
 import { RECIPE_LIBRARY } from "../src/lib/recipes/library";
+import { analyseIngredients } from "../src/lib/allergens";
 import { estimateFreshness } from "../src/lib/freshness";
 import type { Household, HouseholdMember, MealFeedback, Preference } from "../src/lib/types";
 
@@ -50,20 +51,94 @@ test("a nut allergy removes every recipe containing nuts", () => {
   }
 });
 
-test("a dairy allergy excludes cheese, cream, butter, yogurt and paneer alike", () => {
+test("a dairy allergy excludes every real dairy ingredient, and nothing else", () => {
   const profile = buildProfile(household, members, prefs([{ allergies: ["dairy"] }]), []);
   const { suggestions } = recommend(profile, produce);
   assert.ok(suggestions.length > 0, "should still find something to cook");
+
   for (const s of suggestions) {
-    const text = [
+    const names = [
       ...s.recipe.produceUsed.map((p) => p.name),
       ...s.recipe.otherIngredients.map((o) => o.name),
-      ...s.recipe.containsAllergens,
-    ].join(" ").toLowerCase();
-    for (const term of ["cheese", "cream", "butter", "yogurt", "paneer", "milk", "dairy"]) {
-      assert.ok(!text.includes(term), `${s.recipe.title} contains ${term} despite a dairy allergy`);
-    }
+    ];
+    const { derived } = analyseIngredients(names, new Set());
+    assert.ok(
+      !derived.has("dairy"),
+      `${s.recipe.title} carries dairy despite a dairy allergy`,
+    );
   }
+});
+
+test("coconut milk is not dairy, and eggplant is not egg", () => {
+  // Both were false positives under the old substring gate.
+  const dairyFree = buildProfile(household, members, prefs([{ allergies: ["dairy"] }]), []);
+  const eggFree = buildProfile(household, members, prefs([{ allergies: ["egg"] }]), []);
+
+  const coconutSoup = RECIPE_LIBRARY.find((r) => r.id === "lib-thai-carrot-soup")!;
+  assert.equal(checkHardExclusions(coconutSoup, dairyFree).excluded, false);
+
+  const withEggplant = {
+    ...coconutSoup,
+    id: "tmp-eggplant",
+    produceUsed: [{ name: "eggplant", amount: "2" }],
+    otherIngredients: [{ name: "olive oil", amount: "2 tbsp", pantry: true }],
+  };
+  assert.equal(checkHardExclusions(withEggplant, eggFree).excluded, false);
+});
+
+test("allergens hidden inside an ingredient name still block", () => {
+  // The recipe lists its ingredients honestly; the name just doesn't say "fish".
+  const fishFree = buildProfile(household, members, prefs([{ allergies: ["fish"] }]), []);
+  const shellfishFree = buildProfile(household, members, prefs([{ allergies: ["shellfish"] }]), []);
+  const base = RECIPE_LIBRARY[0];
+
+  const cases: [string, typeof fishFree][] = [
+    ["worcestershire sauce", fishFree],
+    ["oyster sauce", shellfishFree],
+    ["red curry paste", shellfishFree],
+    ["kimchi", fishFree],
+  ];
+
+  for (const [ingredient, profile] of cases) {
+    const recipe = {
+      ...base,
+      id: `tmp-${ingredient}`,
+      containsAllergens: [], // deliberately lying about its own contents
+      produceUsed: [{ name: "spinach", amount: "1 bag" }],
+      otherIngredients: [{ name: ingredient, amount: "1 tbsp", pantry: false }],
+    };
+    const result = checkHardExclusions(recipe, profile);
+    assert.equal(result.excluded, true, `${ingredient} was not blocked`);
+  }
+});
+
+test("an unrecognised ingredient is flagged, not silently allowed or hidden", () => {
+  const profile = buildProfile(household, members, prefs([{ allergies: ["fish"] }]), []);
+  const base = RECIPE_LIBRARY[0];
+  const recipe = {
+    ...base,
+    id: "tmp-mystery",
+    produceUsed: [{ name: "spinach", amount: "1 bag" }],
+    otherIngredients: [{ name: "grandma's special sauce", amount: "2 tbsp", pantry: false }],
+  };
+  const result = checkHardExclusions(recipe, profile);
+  assert.equal(result.excluded, false, "we flag rather than block");
+  assert.ok(
+    result.unverified.includes("grandma's special sauce"),
+    "the ingredient we could not check must be reported",
+  );
+});
+
+test("households with no allergies aren't shown unverified warnings", () => {
+  const profile = buildProfile(household, members, prefs(), []);
+  const base = RECIPE_LIBRARY[0];
+  const recipe = {
+    ...base,
+    id: "tmp-mystery-2",
+    produceUsed: [{ name: "spinach", amount: "1 bag" }],
+    otherIngredients: [{ name: "grandma's special sauce", amount: "2 tbsp", pantry: false }],
+  };
+  assert.deepEqual(checkHardExclusions(recipe, profile).unverified, []);
 });
 
 test("a vegetarian restriction excludes every meat and fish recipe", () => {

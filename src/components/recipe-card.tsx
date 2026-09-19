@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { Suggestion } from "@/lib/rank";
+import { formatList, type Suggestion } from "@/lib/rank";
 import { BandBadge, Card, Pill } from "./ui";
 
 const SLOT_TONE: Record<string, string> = {
@@ -30,7 +30,8 @@ function CardArt({ title, slot }: { title: string; slot: string }) {
 }
 
 export function RecipeCard({ suggestion, scanId }: { suggestion: Suggestion; scanId: string }) {
-  const { recipe, slot, slotLabel, why, matchedProduce, missingPurchases } = suggestion;
+  const { recipe, slot, slotLabel, why, matchedProduce, missingPurchases, unverified } =
+    suggestion;
   const useFirst = matchedProduce.filter((m) => m.band === "use-first");
 
   return (
@@ -71,6 +72,13 @@ export function RecipeCard({ suggestion, scanId }: { suggestion: Suggestion; sca
               : `Still need: ${missingPurchases.join(", ")}.`}
           </p>
         </div>
+
+        {unverified.length > 0 && (
+          <p className="mt-4 rounded-2xl border border-squash/40 bg-squash-50 px-4 py-3 text-[14px] leading-snug text-[#8a5a1c]">
+            <strong className="font-bold">We couldn't check {formatList(unverified)}</strong> against
+            your allergies. Read the label before you cook this.
+          </p>
+        )}
 
         {useFirst.length > 0 && (
           <p className="mt-3 text-[14px] text-tomato">
