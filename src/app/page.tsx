@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/components/app-provider";
 import { Button, ButtonLink, Screen, Spinner } from "@/components/ui";
 
@@ -9,9 +9,13 @@ export default function WelcomePage() {
   const { data, ready, seedDemo } = useApp();
   const router = useRouter();
   const [seeding, setSeeding] = useState(false);
+  // Seeding the demo sets a completed household, which would otherwise trip the
+  // redirect below and dump the user on the dashboard instead of their produce.
+  const seedingDemo = useRef(false);
 
   // Someone who has already set up goes straight to their kitchen.
   useEffect(() => {
+    if (seedingDemo.current) return;
     if (ready && data.household?.onboardingComplete) router.replace("/dashboard");
   }, [ready, data.household, router]);
 
@@ -19,6 +23,7 @@ export default function WelcomePage() {
   if (data.household?.onboardingComplete) return <Spinner label="Opening your kitchen" />;
 
   const onDemo = async () => {
+    seedingDemo.current = true;
     setSeeding(true);
     await seedDemo();
     router.push("/priority");

@@ -185,8 +185,11 @@ function MealsScreen() {
         />
 
         {plan.learning && (
-          <div className="mb-4">
-            <Notice tone="warn">{LEARNING_MESSAGE}</Notice>
+          <div className="mb-4 flex items-start gap-2.5 rounded-2xl border border-squash/25 bg-squash-50 px-4 py-3">
+            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-squash" aria-hidden="true" />
+            <p className="text-[14px] leading-snug text-[#8a5a1c]">
+              <span className="font-bold">Still calibrating.</span> {LEARNING_MESSAGE}
+            </p>
           </div>
         )}
 

@@ -115,6 +115,91 @@ export function estimateSaved(
   return { grams, usd };
 }
 
+/** Meals rated before we can honestly claim to know a household's taste. */
+export const MEALS_FOR_STRONG_SIGNAL = 5;
+
+export interface LearningProgress {
+  mealsCooked: number;
+  mealsRated: number;
+  mealsTurnedDown: number;
+  membersWithPreferences: number;
+  totalMembers: number;
+  /** 0-1, how much we actually have to go on. */
+  strength: number;
+  stage: "starting-out" | "getting-there" | "knows-you";
+  headline: string;
+  /** The single most useful thing they could do next, or null if nothing. */
+  nextStep: string | null;
+}
+
+/**
+ * What we know about a household, and what would sharpen it.
+ *
+ * Deliberately built from things the family did, not from a hidden score:
+ * meals rated, meals turned down, and whose preferences are filled in. The
+ * point is to be honest about when suggestions are still guesswork.
+ */
+export function learningProgress(data: AppData): LearningProgress {
+  const cooked = data.feedback.filter((f) => f.kind === "cooked");
+  const rated = cooked.filter((f) => f.rating !== null);
+  const turnedDown = data.feedback.filter(
+    (f) => f.kind === "rejected" && f.rejectionReason !== null,
+  );
+
+  const totalMembers = data.members.length;
+  const membersWithPreferences = data.members.filter((m) => {
+    const p = data.preferences.find((pref) => pref.memberId === m.id);
+    if (!p) return false;
+    return Boolean(
+      p.favoriteCuisines.length ||
+        p.heatTolerance ||
+        p.allergies.length ||
+        p.dislikes.length ||
+        p.texturePreferences.length,
+    );
+  }).length;
+
+  // Feedback is worth more than a filled-in form: it's what people actually did.
+  const fromPreferences = totalMembers ? (membersWithPreferences / totalMembers) * 0.4 : 0;
+  const fromRatings = Math.min(rated.length / MEALS_FOR_STRONG_SIGNAL, 1) * 0.45;
+  const fromRejections = Math.min(turnedDown.length / 3, 1) * 0.15;
+  const strength = Math.min(1, fromPreferences + fromRatings + fromRejections);
+
+  const stage = strength >= 0.75 ? "knows-you" : strength >= 0.35 ? "getting-there" : "starting-out";
+
+  const remaining = Math.max(0, MEALS_FOR_STRONG_SIGNAL - rated.length);
+  const headline =
+    stage === "knows-you"
+      ? "We've got a good feel for your family"
+      : rated.length === 0
+        ? "We're still guessing"
+        : `${remaining} more meal${remaining === 1 ? "" : "s"} and we'll really know your taste`;
+
+  // Point at whatever is actually missing, biggest gap first.
+  let nextStep: string | null = null;
+  if (totalMembers === 0) nextStep = "Add the people you cook for";
+  else if (membersWithPreferences < totalMembers) {
+    const missing = totalMembers - membersWithPreferences;
+    nextStep = `Fill in what ${missing === 1 ? "one more person" : `${missing} more people`} likes`;
+  } else if (rated.length < MEALS_FOR_STRONG_SIGNAL) {
+    nextStep = "Cook something and tell us how it went";
+  } else if (turnedDown.length === 0) {
+    nextStep = "Tap \u201cNot for us\u201d when a meal misses \u2014 it teaches us fastest";
+  }
+
+  return {
+    mealsCooked: cooked.length,
+    mealsRated: rated.length,
+    mealsTurnedDown: turnedDown.length,
+    membersWithPreferences,
+    totalMembers,
+    strength,
+    stage,
+    headline,
+    nextStep,
+  };
+}
+
 /** True once the household has answered enough to get tailored results. */
 export function onboardingComplete(data: AppData): boolean {
   return Boolean(data.household?.onboardingComplete);

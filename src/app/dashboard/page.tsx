@@ -17,7 +17,14 @@ import {
   Spinner,
 } from "@/components/ui";
 import { BAND_LABELS, FRESHNESS_DISCLAIMER } from "@/lib/freshness";
-import { bandedItems, impactStats, latestScan, mealPlan } from "@/lib/selectors";
+import {
+  MEALS_FOR_STRONG_SIGNAL,
+  bandedItems,
+  impactStats,
+  latestScan,
+  learningProgress,
+  mealPlan,
+} from "@/lib/selectors";
 
 export default function DashboardPage() {
   const { data, ready } = useApp();
@@ -27,6 +34,7 @@ export default function DashboardPage() {
   const items = useMemo(() => (scan ? bandedItems(data, scan) : []), [data, scan]);
   const plan = useMemo(() => mealPlan(data, scan), [data, scan]);
   const stats = useMemo(() => impactStats(data), [data]);
+  const learning = useMemo(() => learningProgress(data), [data]);
 
   if (!ready) return <Spinner />;
 
@@ -121,6 +129,8 @@ export default function DashboardPage() {
             </>
           )}
 
+          <LearningCard progress={learning} />
+
           <section>
             <h2 className="mb-2.5 text-[19px] font-bold text-ink">Since you started</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -149,6 +159,86 @@ export default function DashboardPage() {
       </Screen>
       <BottomNav />
     </>
+  );
+}
+
+/**
+ * How well the app knows this household, and what would sharpen it.
+ *
+ * Modelled on a calibration countdown rather than a score: discrete segments
+ * for meals rated, and a concrete number of meals left. "Rate 3 more meals"
+ * is something a family can act on; "62%" isn't.
+ */
+function LearningCard({ progress }: { progress: ReturnType<typeof learningProgress> }) {
+  const done = progress.stage === "knows-you";
+  const remaining = Math.max(0, MEALS_FOR_STRONG_SIGNAL - progress.mealsRated);
+
+  return (
+    <Card>
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">
+        {done ? "Calibrated" : "Still calibrating"}
+      </p>
+      <h2 className="mt-1.5 text-[21px] font-bold leading-snug text-ink">
+        {done
+          ? "We've got a good feel for your family"
+          : progress.mealsRated === 0
+            ? `Rate ${MEALS_FOR_STRONG_SIGNAL} meals and we'll know your taste`
+            : `${remaining} more meal${remaining === 1 ? "" : "s"} to calibrate`}
+      </h2>
+      <p className="mt-2 text-[15px] leading-snug text-muted">
+        {done
+          ? "Suggestions are now shaped by what you've actually cooked and turned down."
+          : "Until then we're going on preferences alone, so expect a few misses."}
+      </p>
+
+      <div
+        className="mt-4 flex gap-1.5"
+        role="progressbar"
+        aria-valuenow={progress.mealsRated}
+        aria-valuemin={0}
+        aria-valuemax={MEALS_FOR_STRONG_SIGNAL}
+        aria-label={`${progress.mealsRated} of ${MEALS_FOR_STRONG_SIGNAL} meals rated`}
+      >
+        {Array.from({ length: MEALS_FOR_STRONG_SIGNAL }, (_, i) => (
+          <span
+            key={i}
+            className={`h-2.5 flex-1 rounded-full transition-colors duration-500 ${
+              i < progress.mealsRated ? "bg-leaf-500" : "bg-hairline"
+            }`}
+          />
+        ))}
+      </div>
+
+      <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
+        <div>
+          <dt className="sr-only">Meals rated</dt>
+          <dd className="text-[20px] font-bold tabular-nums text-ink">
+            {progress.mealsRated}
+            <span className="text-[15px] font-medium text-muted">/{MEALS_FOR_STRONG_SIGNAL}</span>
+          </dd>
+          <p className="mt-0.5 text-[13px] leading-snug text-muted">Meals rated</p>
+        </div>
+        <div>
+          <dt className="sr-only">Meals turned down</dt>
+          <dd className="text-[20px] font-bold tabular-nums text-ink">{progress.mealsTurnedDown}</dd>
+          <p className="mt-0.5 text-[13px] leading-snug text-muted">Turned down</p>
+        </div>
+        <div>
+          <dt className="sr-only">People set up</dt>
+          <dd className="text-[20px] font-bold tabular-nums text-ink">
+            {progress.membersWithPreferences}
+            <span className="text-[15px] font-medium text-muted">/{progress.totalMembers || 0}</span>
+          </dd>
+          <p className="mt-0.5 text-[13px] leading-snug text-muted">People set up</p>
+        </div>
+      </dl>
+
+      {progress.nextStep && (
+        <p className="mt-4 rounded-2xl bg-leaf-50 px-4 py-3 text-[15px] leading-snug text-leaf-700">
+          <span className="font-semibold">Next:</span> {progress.nextStep}
+        </p>
+      )}
+    </Card>
   );
 }
 
