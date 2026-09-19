@@ -107,6 +107,7 @@ export default function HouseholdPage() {
           householdId: household.id,
           name: "",
           isChild,
+          ageStage: isChild ? null : "adult",
           createdAt: new Date().toISOString(),
         },
       ],

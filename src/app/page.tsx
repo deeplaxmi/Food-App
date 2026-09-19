@@ -16,7 +16,9 @@ export default function WelcomePage() {
   // Someone who has already set up goes straight to their kitchen.
   useEffect(() => {
     if (seedingDemo.current) return;
-    if (ready && data.household?.onboardingComplete) router.replace("/dashboard");
+    // Scanning is the thing people came to do. The kitchen dashboard is a
+    // place to look back; the camera is what earns the app a second open.
+    if (ready && data.household?.onboardingComplete) router.replace("/scan");
   }, [ready, data.household, router]);
 
   if (!ready) return <Spinner label="Just a moment" />;

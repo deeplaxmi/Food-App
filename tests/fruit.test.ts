@@ -10,7 +10,7 @@ const household: Household = {
   onboardingComplete: true, createdAt: "",
 };
 const members: HouseholdMember[] = [
-  { id: "m1", householdId: "h", name: "A", isChild: false, createdAt: "" },
+  { id: "m1", householdId: "h", name: "A", isChild: false, ageStage: "adult", createdAt: "" },
 ];
 const prefs = (o: Partial<Preference> = {}): Preference[] => [{
   id: "p", memberId: "m1", favoriteCuisines: [], heatTolerance: "mild",

@@ -18,9 +18,11 @@ import {
 import { track } from "@/lib/analytics";
 import { newId } from "@/lib/store";
 import {
+  AGE_STAGES,
   HEAT_LABELS,
   HEAT_LEVELS,
   TEXTURE_OPTIONS,
+  type AgeStage,
   type HeatTolerance,
   type HouseholdMember,
   type Preference,
@@ -39,6 +41,7 @@ interface DraftMember {
   id: string;
   name: string;
   isChild: boolean;
+  ageStage: AgeStage | null;
   favoriteCuisines: string[];
   heatTolerance: HeatTolerance | null;
   allergies: string[];
@@ -52,6 +55,7 @@ function blankMember(isChild: boolean): DraftMember {
     id: newId("mem"),
     name: "",
     isChild,
+    ageStage: isChild ? null : "adult",
     favoriteCuisines: [],
     heatTolerance: null,
     allergies: [],
@@ -72,6 +76,8 @@ export default function OnboardingPage() {
   const [members, setMembers] = useState<DraftMember[]>([]);
   const [maxMinutes, setMaxMinutes] = useState(30);
   const [pantry, setPantry] = useState<string[]>(COMMON_PANTRY.slice(0, 10));
+  // Absence of allergies has to be stated, not assumed from an empty form.
+  const [noAllergies, setNoAllergies] = useState(false);
 
   // Keeps the roster in step with the counts without losing what's typed.
   const syncMembers = (nextAdults: number, nextChildren: number) => {
@@ -91,9 +97,15 @@ export default function OnboardingPage() {
     setMembers((current) => current.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
   const steps = useMemo(
-    () => ["Household", "Who's eating", "Preferences", "Cooking time", "Pantry"],
+    () => ["Household", "Who's eating", "Allergies", "Preferences", "Cooking time", "Pantry"],
     [],
   );
+
+  const anyAllergies = members.some(
+    (m) => m.allergies.length > 0 || m.dietaryRestrictions.length > 0,
+  );
+  // The one question that can't be left implicitly blank.
+  const allergyStepAnswered = anyAllergies || noAllergies;
 
   if (!ready) return <Spinner />;
 
@@ -107,6 +119,7 @@ export default function OnboardingPage() {
       householdId,
       name: m.name.trim() || (m.isChild ? `Child ${i + 1}` : `Adult ${i + 1}`),
       isChild: m.isChild,
+      ageStage: m.ageStage,
       createdAt: now,
     }));
 
@@ -131,6 +144,7 @@ export default function OnboardingPage() {
         adults,
         children,
         maxWeeknightMinutes: maxMinutes,
+        allergiesConfirmedNone: noAllergies,
         pantryStaples: pantry,
         onboardingComplete: true,
         createdAt: now,
@@ -164,6 +178,7 @@ export default function OnboardingPage() {
           [
             "Tell us about your household",
             "Who's eating?",
+            "Does anyone have a food allergy?",
             "What does everyone like?",
             "How long do you have on a weeknight?",
             "What's usually in the cupboard?",
@@ -172,7 +187,8 @@ export default function OnboardingPage() {
         subtitle={
           [
             "This is just so we can size recipes properly.",
-            "First names or nicknames are fine.",
+            "First names or nicknames are fine. Ages matter — babies and toddlers need different food.",
+            "This is the one thing we never guess at. We'll never suggest a recipe containing these.",
             "Skip anyone you're not sure about — you can add this later.",
             "We'll keep weeknight suggestions inside this.",
             "We'll assume you have these, so the shopping list stays short.",
@@ -206,7 +222,7 @@ export default function OnboardingPage() {
               </Card>
             )}
             {members.map((m, i) => (
-              <Card key={m.id}>
+              <Card key={m.id} className="space-y-4">
                 <Field label={m.isChild ? `Child ${countIn(members, m)}` : `Adult ${countIn(members, m)}`}>
                   <TextInput
                     value={m.name}
@@ -216,6 +232,21 @@ export default function OnboardingPage() {
                     autoFocus={i === 0}
                   />
                 </Field>
+                <Field group label="How old?">
+                  <div className="flex flex-wrap gap-2">
+                    {AGE_STAGES.map((stage) => (
+                      <Chip
+                        key={stage.id}
+                        selected={m.ageStage === stage.id}
+                        onClick={() =>
+                          patchMember(m.id, { ageStage: m.ageStage === stage.id ? null : stage.id })
+                        }
+                      >
+                        {stage.label} <span className="opacity-60">{stage.hint}</span>
+                      </Chip>
+                    ))}
+                  </div>
+                </Field>
               </Card>
             ))}
           </>
@@ -224,12 +255,72 @@ export default function OnboardingPage() {
         {step === 2 && (
           <>
             {members.map((m) => (
+              <Card key={m.id} className="space-y-5">
+                <p className="text-[18px] font-bold text-ink">
+                  {m.name.trim() || (m.isChild ? "This child" : "This adult")}
+                </p>
+                <Field group label="Allergies">
+                  <TagInput
+                    values={m.allergies}
+                    onChange={(allergies) => {
+                      patchMember(m.id, { allergies });
+                      if (allergies.length) setNoAllergies(false);
+                    }}
+                    placeholder="Add an allergy"
+                    suggestions={COMMON_ALLERGIES}
+                    tone="plain"
+                  />
+                </Field>
+                <Field group label="Dietary restrictions" hint="Medical or religious — also never crossed.">
+                  <TagInput
+                    values={m.dietaryRestrictions}
+                    onChange={(dietaryRestrictions) =>
+                      patchMember(m.id, { dietaryRestrictions })
+                    }
+                    placeholder="Add a restriction"
+                    suggestions={COMMON_RESTRICTIONS}
+                    tone="plain"
+                  />
+                </Field>
+              </Card>
+            ))}
+
+            <Card>
+              <button
+                type="button"
+                onClick={() => setNoAllergies((v) => !v)}
+                disabled={anyAllergies}
+                className="tap flex w-full items-start gap-3 text-left disabled:opacity-40"
+              >
+                <span
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${
+                    noAllergies ? "border-leaf-500 bg-leaf-500 text-white" : "border-hairline"
+                  }`}
+                  aria-hidden="true"
+                >
+                  {noAllergies && "\u2713"}
+                </span>
+                <span className="text-[16px] leading-snug text-ink">
+                  Nobody in this household has a food allergy or dietary restriction.
+                </span>
+              </button>
+              <p className="mt-3 text-[14px] leading-snug text-muted">
+                We ask outright because we treat allergies as an absolute rule, never a
+                preference. You can change this any time in Settings.
+              </p>
+            </Card>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            {members.map((m) => (
               <MemberPreferences key={m.id} member={m} onPatch={(p) => patchMember(m.id, p)} />
             ))}
           </>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <Card>
             <div className="flex flex-wrap gap-2.5">
               {COOK_TIMES.map((minutes) => (
@@ -245,7 +336,7 @@ export default function OnboardingPage() {
           </Card>
         )}
 
-        {step === 4 && (
+        {step === 5 && (
           <Card>
             <TagInput
               values={pantry}
@@ -258,8 +349,17 @@ export default function OnboardingPage() {
       </div>
 
       <div className="mt-7 space-y-3">
-        <Button size="lg" full onClick={next}>
-          {step === steps.length - 1 ? "Finish setup" : "Continue"}
+        <Button
+          size="lg"
+          full
+          onClick={next}
+          disabled={step === 2 && !allergyStepAnswered}
+        >
+          {step === 2 && !allergyStepAnswered
+            ? "Add allergies, or confirm there are none"
+            : step === steps.length - 1
+              ? "Finish setup"
+              : "Continue"}
         </Button>
         <div className="flex justify-between">
           <Button
@@ -268,7 +368,8 @@ export default function OnboardingPage() {
           >
             Back
           </Button>
-          {step > 0 && (
+          {/* Every question is skippable except the allergy one. */}
+          {step > 0 && step !== 2 && (
             <Button variant="ghost" onClick={next}>
               Skip this
             </Button>

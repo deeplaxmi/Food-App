@@ -14,9 +14,16 @@ import {
   Spinner,
 } from "@/components/ui";
 import { track } from "@/lib/analytics";
-import { buildProfile, explain, scoreRecipe } from "@/lib/rank";
+import { buildProfile, explain, littleOnesNote, scoreRecipe } from "@/lib/rank";
 import type { RecommendationSlot } from "@/lib/types";
 import { bandedItems, getRecipeFrom, scanById } from "@/lib/selectors";
+
+function formatListOf(names: string[]): string {
+  if (names.length === 0) return "the little ones";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
 
 export default function RecipePage() {
   return (
@@ -37,6 +44,11 @@ function RecipeScreen() {
   const recipe = getRecipeFrom(data, recipeId);
 
   const slot = (params.get("slot") as RecommendationSlot) ?? "best-match";
+  const littleOnes = useMemo(() => {
+    if (!recipe || !data.household) return null;
+    const profile = buildProfile(data.household, data.members, data.preferences, data.feedback);
+    return { note: littleOnesNote(recipe, profile), who: profile.littleOnes };
+  }, [recipe, data]);
   const scored = useMemo(() => {
     if (!recipe || !data.household || !scan) return null;
     const profile = buildProfile(data.household, data.members, data.preferences, data.feedback);
@@ -105,6 +117,38 @@ function RecipeScreen() {
           <Pill>Serves {recipe.servesAdults}</Pill>
           {recipe.source === "ai-generated" && <Pill tone="ai">Written by AI</Pill>}
         </div>
+
+        {littleOnes?.note && (
+          <div className="rounded-3xl border-2 border-squash bg-squash-50 p-5">
+            <h2 className="text-[19px] font-bold text-[#8a5a1c]">
+              Serving {formatListOf(littleOnes.who)}
+            </h2>
+            {littleOnes.note.unsafeForBabies.length > 0 && (
+              <p className="mt-2 text-[16px] font-semibold leading-snug text-[#8a5a1c]">
+                Leave out the {littleOnes.note.unsafeForBabies.join(", ")} — it isn't safe for
+                a child under one.
+              </p>
+            )}
+            {littleOnes.note.chokingAdvice.length > 0 && (
+              <>
+                <p className="mt-2 text-[16px] leading-snug text-[#8a5a1c]">
+                  Cut these differently for small children:
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {littleOnes.note.chokingAdvice.map((line) => (
+                    <li key={line} className="text-[16px] leading-snug text-[#8a5a1c]">
+                      • {line}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p className="mt-3 text-[14px] leading-snug text-[#8a5a1c]/80">
+              General guidance only. You know your child; follow your own judgement and your
+              health visitor's advice.
+            </p>
+          </div>
+        )}
 
         {scored && scored.unverified.length > 0 && (
           <div className="rounded-3xl border-2 border-squash bg-squash-50 p-5">

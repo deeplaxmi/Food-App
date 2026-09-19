@@ -42,6 +42,8 @@ export interface Household {
   id: string;
   userId: string;
   name: string;
+  /** Explicitly confirmed that nobody here has a food allergy. */
+  allergiesConfirmedNone?: boolean;
   adults: number;
   children: number;
   /** Minutes available to cook on a weeknight. */
@@ -51,11 +53,36 @@ export interface Household {
   createdAt: string;
 }
 
+/**
+ * Age matters for more than portion size. Under-ones must not have honey,
+ * and small children need choking hazards handled differently, so this drives
+ * safety rules rather than just wording.
+ */
+export type AgeStage = "baby" | "toddler" | "child" | "teen" | "adult";
+
+export const AGE_STAGES: { id: AgeStage; label: string; hint: string }[] = [
+  { id: "baby", label: "Baby", hint: "Under 1" },
+  { id: "toddler", label: "Toddler", hint: "1 to 3" },
+  { id: "child", label: "Child", hint: "4 to 12" },
+  { id: "teen", label: "Teen", hint: "13 to 17" },
+  { id: "adult", label: "Adult", hint: "18+" },
+];
+
+export const AGE_STAGE_LABELS: Record<AgeStage, string> = {
+  baby: "Baby",
+  toddler: "Toddler",
+  child: "Child",
+  teen: "Teen",
+  adult: "Adult",
+};
+
 export interface HouseholdMember {
   id: string;
   householdId: string;
   name: string;
   isChild: boolean;
+  /** Null when they haven't told us; falls back to isChild for sizing. */
+  ageStage: AgeStage | null;
   createdAt: string;
 }
 

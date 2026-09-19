@@ -1,7 +1,13 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 
-import { buildProfile, checkHardExclusions, recommend, type AvailableItem } from "../src/lib/rank";
+import {
+  buildProfile,
+  checkHardExclusions,
+  littleOnesNote,
+  recommend,
+  type AvailableItem,
+} from "../src/lib/rank";
 import { RECIPE_LIBRARY } from "../src/lib/recipes/library";
 import { analyseIngredients } from "../src/lib/allergens";
 import { estimateFreshness } from "../src/lib/freshness";
@@ -15,8 +21,8 @@ const household: Household = {
 };
 
 const members: HouseholdMember[] = [
-  { id: "m1", householdId: "h1", name: "Ada", isChild: false, createdAt: "" },
-  { id: "m2", householdId: "h1", name: "Ben", isChild: true, createdAt: "" },
+  { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+  { id: "m2", householdId: "h1", name: "Ben", isChild: true, ageStage: "adult", createdAt: "" },
 ];
 
 function prefs(overrides: Partial<Preference>[] = []): Preference[] {
@@ -326,4 +332,66 @@ test("every library recipe has real quantities and real steps", () => {
       assert.ok(item.amount.trim().length > 0, `${recipe.id}: "${item.name}" has no quantity`);
     }
   }
+});
+
+test("honey is never suggested to a household with a baby", () => {
+  // Infant botulism. This is a hard exclusion, like an allergy, not a preference.
+  const withBaby: HouseholdMember[] = [
+    { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+    { id: "m2", householdId: "h1", name: "Bo", isChild: true, ageStage: "baby", createdAt: "" },
+  ];
+  const profile = buildProfile(household, withBaby, prefs(), []);
+  assert.deepEqual(profile.babies, ["Bo"]);
+
+  const base = RECIPE_LIBRARY[0];
+  const withHoney = {
+    ...base,
+    id: "tmp-honey",
+    produceUsed: [{ name: "spinach", amount: "1 bag" }],
+    otherIngredients: [{ name: "honey", amount: "1 tbsp", pantry: true }],
+  };
+  const result = checkHardExclusions(withHoney, profile);
+  assert.equal(result.excluded, true, "honey reached a household with a baby");
+  assert.match(result.reason ?? "", /under one/);
+
+  // And no library recipe slips through either.
+  for (const s of recommend(profile, produce).suggestions) {
+    const names = [...s.recipe.produceUsed, ...s.recipe.otherIngredients]
+      .map((i) => i.name.toLowerCase())
+      .join(" ");
+    assert.ok(!names.includes("honey"), `${s.recipe.title} contains honey`);
+  }
+});
+
+test("honey is fine once the youngest is a toddler", () => {
+  const withToddler: HouseholdMember[] = [
+    { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+    { id: "m2", householdId: "h1", name: "Bo", isChild: true, ageStage: "toddler", createdAt: "" },
+  ];
+  const profile = buildProfile(household, withToddler, prefs(), []);
+  assert.deepEqual(profile.babies, []);
+  const base = RECIPE_LIBRARY[0];
+  const withHoney = {
+    ...base,
+    id: "tmp-honey-2",
+    produceUsed: [{ name: "spinach", amount: "1 bag" }],
+    otherIngredients: [{ name: "honey", amount: "1 tbsp", pantry: true }],
+  };
+  assert.equal(checkHardExclusions(withHoney, profile).excluded, false);
+});
+
+test("choking shapes are flagged by name for under-fours", () => {
+  const withToddler: HouseholdMember[] = [
+    { id: "m1", householdId: "h1", name: "Ada", isChild: false, ageStage: "adult", createdAt: "" },
+    { id: "m2", householdId: "h1", name: "Bo", isChild: true, ageStage: "toddler", createdAt: "" },
+  ];
+  const profile = buildProfile(household, withToddler, prefs(), []);
+  const slaw = RECIPE_LIBRARY.find((r) => r.id === "lib-carrot-peanut-noodles")!;
+  const note = littleOnesNote(slaw, profile);
+  assert.ok(note, "expected guidance for a household with a toddler");
+  assert.ok(note!.chokingAdvice.some((a) => a.includes("peanuts")));
+
+  // Households without small children aren't shown any of this.
+  const adultsOnly = buildProfile(household, members, prefs(), []);
+  assert.equal(littleOnesNote(slaw, adultsOnly), null);
 });

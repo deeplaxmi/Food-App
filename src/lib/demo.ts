@@ -1,4 +1,4 @@
-import { EMPTY_DATA, type AppData } from "./types";
+import { EMPTY_DATA, type AgeStage, type AppData } from "./types";
 
 const now = new Date();
 const iso = (d: Date) => d.toISOString();
@@ -18,11 +18,11 @@ export function buildDemoData(): AppData {
   const householdId = "demo-household";
   const scanId = "demo-scan";
 
-  const members = [
-    { id: "m-priya", name: "Priya", isChild: false },
-    { id: "m-sam", name: "Sam", isChild: false },
-    { id: "m-arjun", name: "Arjun", isChild: true },
-    { id: "m-mira", name: "Mira", isChild: true },
+  const members: { id: string; name: string; isChild: boolean; ageStage: AgeStage }[] = [
+    { id: "m-priya", name: "Priya", isChild: false, ageStage: "adult" },
+    { id: "m-sam", name: "Sam", isChild: false, ageStage: "adult" },
+    { id: "m-arjun", name: "Arjun", isChild: true, ageStage: "child" },
+    { id: "m-mira", name: "Mira", isChild: true, ageStage: "toddler" },
   ];
 
   const cuisines = ["Indian", "Thai", "Italian", "Mexican"];
@@ -44,6 +44,7 @@ export function buildDemoData(): AppData {
         "soy sauce", "coconut milk", "canned chopped tomatoes", "chickpeas",
         "black beans", "vegetable stock", "sugar", "brown sugar",
       ],
+      allergiesConfirmedNone: true,
       onboardingComplete: true,
       createdAt: iso(now),
     },
@@ -52,6 +53,7 @@ export function buildDemoData(): AppData {
       householdId,
       name: m.name,
       isChild: m.isChild,
+      ageStage: m.ageStage,
       createdAt: iso(now),
     })),
     preferences: [
