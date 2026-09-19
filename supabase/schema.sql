@@ -85,7 +85,7 @@ create table if not exists public.recipes (
   dietary_tags text[] not null default '{}',
   contains_allergens text[] not null default '{}',
   source text not null default 'library' check (source in ('library', 'ai-generated')),
-  source_note text not null default '',
+  source_note text,
   image_url text,
   created_at timestamptz not null default now()
 );
@@ -96,7 +96,7 @@ create table if not exists public.recommendations (
   household_id uuid not null references public.households (id) on delete cascade,
   recipe_id text not null,
   slot text not null check (slot in ('best-match', 'fastest', 'saves-most')),
-  why text not null default '',
+  why text,
   preferences_considered text[] not null default '{}',
   produce_used_names text[] not null default '{}',
   created_at timestamptz not null default now()
