@@ -7,7 +7,15 @@ import type { AppData } from "../types";
  * key must never reach the browser.
  */
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+/**
+ * Supabase is migrating from the legacy `anon` JWT to a publishable key
+ * (`sb_publishable_...`). Projects provisioned today may have either, or both,
+ * so accept whichever is present rather than insisting on one name.
+ */
+const anonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 let client: SupabaseClient | null = null;
 
