@@ -146,6 +146,18 @@ create table if not exists public.analytics_events (
   created_at timestamptz not null default now()
 );
 
+-- ---------------------------------------------- household sync (no auth)
+-- What the app actually syncs through. The browser holds a random token and
+-- talks to /api/household; the server reads and writes here with the service
+-- role. RLS is on with no policies, so nothing else can reach it.
+create table if not exists public.household_sync (
+  token uuid primary key,
+  document jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+
+alter table public.household_sync enable row level security;
+
 -- ------------------------------------------------ document store (MVP sync)
 -- The app currently syncs one JSON document per user. The normalised tables
 -- above are the target shape; this keeps the client simple until the app needs
@@ -274,3 +286,4 @@ create index if not exists idx_scans_household on public.produce_scans (househol
 create index if not exists idx_detected_scan on public.detected_ingredients (scan_id);
 create index if not exists idx_recommendations_scan on public.recommendations (scan_id);
 create index if not exists idx_feedback_household on public.meal_feedback (household_id, created_at desc);
+create index if not exists idx_household_sync_updated on public.household_sync (updated_at desc);

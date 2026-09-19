@@ -45,30 +45,25 @@ Two traps that cost hours:
 marketplace, so all 17 variables are already injected into the Vercel
 project. Schema is applied (12 tables, row-level security, indexes).
 
-**Blocked:** enabling *Allow anonymous sign-ins* fails with
-`Failed to update settings: failed to update Auth config`. This is a
-Supabase-side error, seen on marketplace-provisioned projects where the
-organisation is owned by Vercel rather than the user. Until it's on,
-`signInAnonymously()` fails, nothing syncs, and the app quietly stays
-on-device.
+**Supabase Auth is no longer used.** Enabling anonymous sign-ins failed with
+`failed to update Auth config`, a Supabase-side error on this
+marketplace-provisioned project. Rather than chase dashboard permissions, the
+dependency was removed:
 
-**Recommended fix: stop depending on Supabase Auth.** Move syncing behind
-our own API route instead of talking to Supabase from the browser:
+- The browser holds a random household token in `localStorage`. No email, no
+  password, no sign-up — which is what a beta wants anyway.
+- `GET/PUT /api/household` takes that token; the server reads and writes
+  `household_sync` with the service role key.
+- Scoping is enforced server-side by the token. `household_sync` has RLS on
+  and **no policies**, so the anon key cannot read a row — only the service
+  role, which never leaves the server. Stricter than the anon-key-plus-RLS
+  arrangement it replaced.
+- Local storage stays the source of truth for responsiveness and offline use;
+  the server copy is what survives a lost phone.
 
-- The client generates a random household token on first run and keeps it
-  in `localStorage`. No email, no signup — important for a beta.
-- `GET/PUT /api/household` takes that token, and the server reads and
-  writes `household_documents` using the service role key (already set in
-  Vercel).
-- The server scopes every query to the token, so one household can never
-  read another's row. The anon key stops being used from the browser at
-  all, which is strictly safer than the current design.
-- Row-level security stays on as defence in depth; the service role
-  bypasses it, and nothing else can reach the table.
-
-This removes the auth dependency, needs no dashboard permissions we do not
-have, and keeps testers frictionless. Roughly an API route plus swapping
-`src/lib/store/supabase.ts` to call it — about sixty lines.
+**One SQL step outstanding:** run `supabase/household-sync.sql` in the SQL
+editor to create that table. Until then the app works but stays on-device,
+and Settings shows "Stored on this device" rather than "Synced and backed up".
 
 **Keys** — `ANTHROPIC_API_KEY` is set and photo scanning works. Every scan
 is a real API call; set a spend limit before sharing widely.

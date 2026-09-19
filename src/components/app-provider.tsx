@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { trackReturnVisit } from "@/lib/analytics";
-import { loadData, resetData, saveData, seedDemoData, storageMode } from "@/lib/store";
+import { loadData, resetData, saveData, seedDemoData, storageMode, type StorageMode } from "@/lib/store";
 import { EMPTY_DATA, type AppData } from "@/lib/types";
 
 interface AppContextValue {
@@ -19,7 +19,7 @@ interface AppContextValue {
   update: (mutate: (draft: AppData) => AppData) => void;
   seedDemo: () => Promise<void>;
   reset: () => Promise<void>;
-  mode: "supabase" | "on-device";
+  mode: StorageMode;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -27,12 +27,15 @@ const AppContext = createContext<AppContextValue | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
   const [ready, setReady] = useState(false);
+  // Resolved after the first load, since it depends on whether the server replied.
+  const [mode, setMode] = useState<StorageMode>("on-device");
 
   useEffect(() => {
     let cancelled = false;
     void loadData().then((loaded) => {
       if (cancelled) return;
       setData(loaded);
+      setMode(storageMode());
       setReady(true);
       trackReturnVisit();
     });
@@ -44,7 +47,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const update = useCallback((mutate: (draft: AppData) => AppData) => {
     setData((current) => {
       const next = mutate(current);
-      void saveData(next);
+      void saveData(next).then(() => setMode(storageMode()));
       return next;
     });
   }, []);
@@ -58,8 +61,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AppContextValue>(
-    () => ({ data, ready, update, seedDemo, reset, mode: storageMode() }),
-    [data, ready, update, seedDemo, reset],
+    () => ({ data, ready, update, seedDemo, reset, mode }),
+    [data, ready, update, seedDemo, reset, mode],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

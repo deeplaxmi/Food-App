@@ -60,14 +60,14 @@ export default function SettingsPage() {
           <Card>
             <h2 className="text-[19px] font-bold text-ink">Your data</h2>
             <div className="mt-2 flex flex-wrap gap-2">
-              <Pill tone={mode === "supabase" ? "leaf" : "plain"}>
-                {mode === "supabase" ? "Synced to your account" : "Stored on this device"}
+              <Pill tone={mode === "synced" ? "leaf" : "plain"}>
+                {mode === "synced" ? "Synced and backed up" : "Stored on this device"}
               </Pill>
             </div>
             <p className="mt-3 text-[15px] leading-snug text-muted">
-              {mode === "supabase"
-                ? "Your household, scans and feedback are saved to your account."
-                : "Everything stays in this browser. Add Supabase credentials to sync across devices."}
+              {mode === "synced"
+                ? "Your household, scans and feedback are saved to this app's database, so they survive a lost phone. No account or password needed."
+                : "Everything stays in this browser. It works fine, but clearing browser data will lose it."}
             </p>
           </Card>
 
