@@ -99,14 +99,24 @@ export function gramsFor(name: string, quantity: string): number {
   const countMatch = /(\d+(?:\.\d+)?)/.exec(text);
   const count = countMatch ? parseFloat(countMatch[1]) : 1;
 
-  for (const [container, table] of Object.entries(CONTAINER_GRAMS)) {
-    if (text.includes(container)) {
-      return count * (table[key] ?? DEFAULT_CONTAINER_GRAMS);
+  // A container word only means "count containers" when the number is counting
+  // them: "2 bags", "1 punnet". People also write "3 in a net bag", where the
+  // number counts what is INSIDE. Reading that as three bags roughly triples
+  // the estimate, so check which shape it is before trusting the count.
+  const countsPieces = /\d[^.]*\bin\s+(a|an|one|the)?\s*\w*\s*(bag|bunch|head|punnet|box|carton|pack|tub|clamshell|container)/.test(
+    text,
+  );
+
+  if (!countsPieces) {
+    for (const [container, table] of Object.entries(CONTAINER_GRAMS)) {
+      if (text.includes(container)) {
+        return count * (table[key] ?? DEFAULT_CONTAINER_GRAMS);
+      }
     }
-  }
-  // "1 punnet" style words we don't have a table for.
-  if (/\b(box|carton|pack|tub|clamshell|container)\b/.test(text)) {
-    return count * DEFAULT_CONTAINER_GRAMS;
+    // Container words we have no table for.
+    if (/\b(box|carton|pack|tub|clamshell|container)\b/.test(text)) {
+      return count * DEFAULT_CONTAINER_GRAMS;
+    }
   }
 
   return count * (PIECE_GRAMS[key] ?? DEFAULT_PIECE_GRAMS);

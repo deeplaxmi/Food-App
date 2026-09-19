@@ -48,3 +48,15 @@ test("a basket totals to the sum of its parts", () => {
   assert.equal(total.usd, Math.round(parts * 100) / 100);
   assert.ok(total.grams > 1000, "three kinds of fruit should be over a kilo");
 });
+
+test("'3 in a net bag' counts the avocados, not the bags", () => {
+  // From a real scan. Reading the number as a container count tripled the
+  // estimate, which is exactly the kind of confident wrong number to avoid.
+  assert.equal(gramsFor("Avocado", "about 3 in a net bag"), 510);
+  assert.equal(gramsFor("Mushrooms", "2 in a punnet"), 300);
+
+  // The other shape still works: here the number really does count containers.
+  assert.equal(gramsFor("Spinach", "2 bags"), 560);
+  assert.equal(gramsFor("Mushrooms", "1 punnet"), 230);
+  assert.equal(gramsFor("Broccoli", "1 large head"), 350);
+});
