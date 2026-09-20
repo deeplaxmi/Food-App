@@ -1,9 +1,14 @@
 import type { Recipe } from "../types";
 
 /**
- * A small, hand-checked recipe library. Every entry has real quantities and real
- * steps, so a household can cook straight from the screen. The ranker prefers
- * these over anything generated; AI recipes are only a fallback and are labelled.
+ * A small, hand-written recipe library. Every entry has real quantities and real
+ * steps, so a household can cook straight from the screen, and every ingredient
+ * list has been checked against the allergen map. Nobody has cooked them, so
+ * nothing here should be described to users as tested or kitchen-checked.
+ *
+ * The ranker still prefers these over anything generated, because a written
+ * recipe with settled quantities beats one improvised per-request; AI recipes
+ * are a fallback and are labelled as such.
  *
  * `containsAllergens` must list every allergen present anywhere in the recipe --
  * it is the input to a hard exclusion, so under-listing is a safety bug.
@@ -48,7 +53,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Lift out a few cubes of paneer and some plain rice before the spices go in.",
   },
   {
@@ -87,7 +92,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Make one with just cheese, cut into strips.",
   },
   {
@@ -125,7 +130,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Set aside some carrot and zucchini before the cumin, and serve with plain yogurt.",
   },
   {
@@ -163,7 +168,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["dairy-free"],
     containsAllergens: ["shellfish", "fish"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe. Most red curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested. Most red curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
     toddlerOption: "Ladle out a portion before the curry paste — it's just carrot and coconut then.",
   },
   {
@@ -201,7 +206,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Keep back a scoop of plain pasta with ricotta before it's mixed with the tomato.",
   },
   {
@@ -239,7 +244,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Set aside plain buttered pasta with a little parmesan before the sauce.",
   },
   {
@@ -280,7 +285,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "vegan", "gluten-free", "dairy-free"],
     containsAllergens: [],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Take out some chickpeas and rice before the spices, and mash the chickpeas a little.",
   },
   {
@@ -317,7 +322,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "egg", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Fritters are good finger food. Cut into strips and serve with plain yogurt.",
   },
   {
@@ -356,7 +361,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["dairy-free"],
     containsAllergens: ["soy", "gluten", "wheat", "shellfish", "fish"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe. Most green curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested. Most green curry pastes contain shrimp paste and fish sauce -- check the jar if that matters to you.",
     toddlerOption: "Plain jasmine rice and a few pieces of tofu, set aside before the paste.",
   },
   {
@@ -395,7 +400,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Rice, beans and cheese in a bowl, no spice mix.",
   },
   {
@@ -434,7 +439,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Scoop out some pasta and soft vegetables before adding the stock's seasoning.",
   },
   {
@@ -473,7 +478,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "vegan", "gluten-free", "dairy-free"],
     containsAllergens: [],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Take out some potato and cauliflower before the spices go on.",
   },
   {
@@ -511,7 +516,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["dairy-free"],
     containsAllergens: ["egg", "soy", "shellfish", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain noodles with a little egg, set aside before the sauce.",
   },
   {
@@ -549,7 +554,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "egg", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "A soft-cooked egg and some bread, kept out of the peppers.",
   },
   {
@@ -587,7 +592,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Soft polenta with butter and parmesan is very toddler-friendly on its own.",
   },
   {
@@ -626,7 +631,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["dairy-free-option"],
     containsAllergens: ["gluten", "wheat", "dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain chicken and a warm tortilla, before the spice mix.",
   },
   {
@@ -665,7 +670,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "vegan", "dairy-free"],
     containsAllergens: ["peanut", "soy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain noodles with a little oil. Keep the peanuts well away.",
   },
   {
@@ -703,7 +708,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Dal is soft and mild already — a small bowl with rice works as is.",
   },
   {
@@ -739,7 +744,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Orzo with butter and parmesan, lifted out before the mushrooms.",
   },
   {
@@ -776,7 +781,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "vegan-option", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Roasted squash is soft and sweet. Serve a few pieces with a plain tortilla.",
   },
   {
@@ -811,7 +816,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Gnocchi with mozzarella, before the tomatoes go in.",
   },
   {
@@ -849,7 +854,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "dairy-free"],
     containsAllergens: ["soy", "gluten", "wheat", "sesame"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain noodles and roasted carrot, set aside before the miso glaze.",
   },
   {
@@ -887,7 +892,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Mashed avocado on a soft tortilla, no lime or cumin.",
   },
   {
@@ -922,7 +927,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Soft peach slices and a little halloumi, cut small.",
   },
   {
@@ -957,7 +962,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["gluten-free", "dairy-free"],
     containsAllergens: [],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain chicken and soft potato, before the pan juices.",
   },
   {
@@ -990,7 +995,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "egg"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Pancakes cut into strips are ideal finger food. Skip the syrup.",
   },
   {
@@ -1027,7 +1032,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian"],
     containsAllergens: ["dairy", "egg"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Soft, mild and easy to spoon — serve a small portion as it is.",
   },
   {
@@ -1065,7 +1070,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["vegetarian", "vegan", "gluten-free", "dairy-free"],
     containsAllergens: [],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Rice, beans and soft mango, no lime.",
   },
   {
@@ -1100,7 +1105,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["dairy-free"],
     containsAllergens: ["gluten", "wheat"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe. Most sausages contain wheat rusk -- check yours if that matters.",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested. Most sausages contain wheat rusk -- check yours if that matters.",
     toddlerOption: "Soft roasted apple and potato. Cut sausage lengthways, never into coins.",
   },
   {
@@ -1136,7 +1141,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
     dietaryTags: ["gluten-free"],
     containsAllergens: ["dairy"],
     source: "library",
-    sourceNote: "Kitchen-tested house recipe",
+    sourceNote: "Written for UseFirst -- full quantities and steps, but not kitchen-tested",
     toddlerOption: "Plain chicken with soft strawberry, cut small.",
   },
 ];

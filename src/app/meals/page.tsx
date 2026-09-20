@@ -148,8 +148,8 @@ function MealsScreen() {
                 body={`Our recipes don't cover ${formatList(have)} properly, and we'd rather say so than invent something you haven't cooked before.`}
               />
               <Notice>
-                Everything we recommend has actually been cooked and checked. That keeps the
-                quality honest, but it does leave gaps — fruit especially.
+                Our recipes are written by hand with full quantities and checked against your
+                allergies. It's a small library, so it leaves gaps — fruit especially.
               </Notice>
               <AiChefOffer produce={items.map((i) => i.name)} onAsk={askTheAiChef} busy={topUp === "loading"} />
               <Button variant="secondary" full onClick={() => router.push("/scan")}>
@@ -207,7 +207,7 @@ function MealsScreen() {
           <div className="mt-5 space-y-3">
             <Notice>
               These meals don't use your {formatList(unmatched.map((n) => n.toLowerCase()))} — we
-              don't have a tested recipe that does.
+              don't have a recipe that does.
             </Notice>
             <AiChefOffer produce={unmatched} onAsk={askTheAiChef} busy={topUp === "loading"} />
           </div>
