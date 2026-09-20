@@ -115,7 +115,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "rice", amount: "for 4, to serve", pantry: true },
     ],
     steps: [
-      "Heat the oven to 425F (220C).",
+      "Heat the oven to 425°F (220°C).",
       "Put the carrots on a large sheet pan with 2 tbsp oil, the cumin, salt and pepper. Roast 12 minutes -- carrots get a head start because they are denser.",
       "Add the zucchini and the drained chickpeas, toss, and roast another 15 minutes until everything is browned at the edges. Roasting, not steaming, is what gives the sweetness here.",
       "Meanwhile stir the yogurt with the grated garlic, half the cilantro, a squeeze of lemon and a pinch of salt.",
@@ -190,7 +190,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "salt and pepper", amount: "to taste", pantry: true },
     ],
     steps: [
-      "Heat the oven to 400F (200C). Boil the pasta 2 minutes short of the package time and drain.",
+      "Heat the oven to 400°F (200°C). Boil the pasta 2 minutes short of the package time and drain.",
       "Wilt the spinach in a dry pan over medium heat, 2-3 minutes. Cool slightly, squeeze out the water, and chop finely.",
       "Warm the oil with the sliced garlic and oregano for 1 minute, add the tomatoes, and simmer 10 minutes. Season.",
       "Mix the ricotta with the chopped spinach, the parmesan, salt and pepper.",
@@ -463,7 +463,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "rice", amount: "for 4, to serve", pantry: true },
     ],
     steps: [
-      "Heat the oven to 450F (230C) with a large sheet pan inside.",
+      "Heat the oven to 450°F (230°C) with a large sheet pan inside.",
       "Toss the potatoes with half the oil and half the spices. Spread on the hot pan and roast 15 minutes.",
       "Toss the cauliflower with the remaining oil, spices, grated garlic and ginger.",
       "Add it to the pan, turn everything, and roast 20 minutes more until the cauliflower edges are dark and crisp. Roasting gives a much better texture than the usual steamy pan version.",
@@ -616,10 +616,10 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "sour cream", amount: "1/2 cup, to serve", pantry: false },
     ],
     steps: [
-      "Heat the oven to 450F (230C).",
+      "Heat the oven to 450°F (230°C).",
       "Toss the chicken, peppers, zucchini and onion with the oil, cumin, paprika, garlic powder and 1 tsp salt.",
       "Spread over two sheet pans -- one crowded pan steams instead of roasting.",
-      "Roast 20 minutes, turning once, until the chicken is cooked through to 165F (74C) and the edges are charred.",
+      "Roast 20 minutes, turning once, until the chicken is cooked through to 165°F (74°C) and the edges are charred.",
       "Squeeze over lime, scatter with cilantro, and serve with warm tortillas and sour cream so everyone builds their own.",
     ],
     texturePreferences: ["roasted-not-steamed", "finger-food", "sauce-on-the-side"],
@@ -766,7 +766,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "sour cream or avocado", amount: "to taste, to serve", pantry: false },
     ],
     steps: [
-      "Heat the oven to 425F (220C). Toss the squash with the oil, cumin, paprika and salt.",
+      "Heat the oven to 425°F (220°C). Toss the squash with the oil, cumin, paprika and salt.",
       "Roast 25 minutes, turning once, until caramelised at the edges.",
       "Warm the beans with a splash of water and season.",
       "Toss the cabbage with lime juice and a pinch of salt for a quick crunchy slaw.",
@@ -839,7 +839,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "sesame seeds", amount: "2 tbsp", pantry: true },
     ],
     steps: [
-      "Heat the oven to 425F (220C). Whisk the miso, soy, honey, sesame oil and neutral oil into a glaze.",
+      "Heat the oven to 425°F (220°C). Whisk the miso, soy, honey, sesame oil and neutral oil into a glaze.",
       "Toss the carrots with a third of the glaze and roast 10 minutes.",
       "Add the broccoli and mushrooms with another third of the glaze and roast 15 minutes more, until the edges are dark and caramelised.",
       "Cook the noodles, drain, and toss with the remaining glaze and a splash of the cooking water.",
@@ -877,7 +877,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "salt", amount: "to taste", pantry: true },
     ],
     steps: [
-      "Heat the oven to 400F (200C). Brush the tortillas on both sides with oil, spread on a sheet pan and bake 8 minutes, turning once, until they crisp into tostadas.",
+      "Heat the oven to 400°F (200°C). Brush the tortillas on both sides with oil, spread on a sheet pan and bake 8 minutes, turning once, until they crisp into tostadas.",
       "Warm the beans in a pan with the grated garlic, cumin, paprika and a splash of water. Mash about half of them so the mixture holds together, and season well.",
       "Halve the avocados and scoop them into a bowl. Add the juice of one lime and a good pinch of salt, and mash to a coarse, chunky texture -- not a purée.",
       "Spread the warm beans over each tostada, then a generous spoonful of the avocado.",
@@ -947,10 +947,10 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "salt and pepper", amount: "to taste", pantry: true },
     ],
     steps: [
-      "Heat the oven to 425F (220C).",
+      "Heat the oven to 425°F (220°C).",
       "Toss the potatoes and fennel with the oil, oregano, garlic cloves, salt and pepper in a large roasting tin.",
       "Sit the chicken thighs on top, skin side up, and tuck the orange slices around them. Pour over the juice of the third orange.",
-      "Season the skin well and roast 40 minutes, until the chicken reaches 175F (80C) at the bone and the skin is crisp.",
+      "Season the skin well and roast 40 minutes, until the chicken reaches 175°F (80°C) at the bone and the skin is crisp.",
       "The orange slices will have caramelised at the edges -- eat them, they're the best part. Spoon the pan juices over everything to serve.",
     ],
     texturePreferences: ["roasted-not-steamed", "no-visible-onions", "no-mixed-textures"],
@@ -1017,7 +1017,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "yogurt, to serve", amount: "to taste", pantry: false },
     ],
     steps: [
-      "Heat the oven to 375F (190C) and butter a baking dish.",
+      "Heat the oven to 375°F (190°C) and butter a baking dish.",
       "Whisk the milk, eggs, maple syrup, melted butter, baking powder and cinnamon together, then stir in the oats.",
       "Fold through most of the berries, keeping a handful back. Soft or slightly bruised fruit is perfect here -- it collapses into the bake.",
       "Pour into the dish, scatter the reserved berries over the top, and bake 30 minutes until set in the middle and golden at the edges.",
@@ -1090,7 +1090,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "salt and pepper", amount: "to taste", pantry: true },
     ],
     steps: [
-      "Heat the oven to 425F (220C). Toss the potatoes and onion with the oil, thyme, salt and pepper and roast 15 minutes.",
+      "Heat the oven to 425°F (220°C). Toss the potatoes and onion with the oil, thyme, salt and pepper and roast 15 minutes.",
       "Add the sausages and apple wedges, turning everything so the apple sits in the fat.",
       "Roast 20 minutes more, turning the sausages once, until they're browned through and the apples have softened without collapsing.",
       "Stir the mustard through the pan juices and spoon over everything.",
@@ -1126,7 +1126,7 @@ export const RECIPE_LIBRARY: Recipe[] = [
       { name: "salt and pepper", amount: "to taste", pantry: true },
     ],
     steps: [
-      "Season the chicken and cook in a hot pan with 1 tbsp oil, 6 minutes a side, until it reaches 165F (74C). Rest 5 minutes, then slice -- resting is what keeps it from going dry.",
+      "Season the chicken and cook in a hot pan with 1 tbsp oil, 6 minutes a side, until it reaches 165°F (74°C). Rest 5 minutes, then slice -- resting is what keeps it from going dry.",
       "Whisk the balsamic, honey, remaining oil, salt and pepper into a dressing.",
       "Toss the spinach and cucumber with about half the dressing, just enough to coat.",
       "Fold the strawberries through at the last moment so they don't weep into the leaves.",

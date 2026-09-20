@@ -16,6 +16,7 @@ import {
   Screen,
   Spinner,
 } from "@/components/ui";
+import { formatWeight } from "@/lib/prices";
 import { BAND_LABELS, FRESHNESS_DISCLAIMER } from "@/lib/freshness";
 import {
   MEALS_FOR_STRONG_SIGNAL,
@@ -139,12 +140,7 @@ export default function DashboardPage() {
               <Stat value={String(stats.ingredientsUsed)} label="Ingredients used up" tone="leaf" />
               {/* These two are estimates, and the labels say what we can defend:
                   produce that got eaten rather than binned -- not money conjured. */}
-              <Stat
-                value={stats.gramsRescued >= 1000
-                  ? `${(stats.gramsRescued / 1000).toFixed(1)} kg`
-                  : `${stats.gramsRescued} g`}
-                label="Produce used in time"
-              />
+              <Stat value={formatWeight(stats.gramsRescued)} label="Produce used in time" />
               <Stat value={`$${stats.dollarsSaved.toFixed(2)}`} label="Worth of produce, not binned" />
             </div>
             <p className="mt-2.5 text-[13px] leading-snug text-muted">

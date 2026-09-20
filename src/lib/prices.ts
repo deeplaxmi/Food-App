@@ -155,3 +155,25 @@ export function totalValue(items: { name: string; quantity: string }[]): {
     { grams: 0, usd: 0, allRecognised: true },
   );
 }
+
+const GRAMS_PER_OUNCE = 28.3495;
+const GRAMS_PER_POUND = 453.592;
+
+/**
+ * Weights we show people, in the units an American cook actually uses. We keep
+ * grams internally because the price tables are per-kilo and the arithmetic is
+ * cleaner, but nobody wants to read "1.4 kg of produce" on a dashboard.
+ *
+ * Under a pound reads in whole ounces; a pound and over reads in pounds to one
+ * decimal, so "1.5 lb" rather than "24 oz".
+ */
+export function formatWeight(grams: number): string {
+  if (grams < GRAMS_PER_POUND) {
+    const ounces = Math.round(grams / GRAMS_PER_OUNCE);
+    return `${ounces} oz`;
+  }
+  const pounds = grams / GRAMS_PER_POUND;
+  // Whole pounds shouldn't carry a pointless ".0".
+  const rounded = Math.round(pounds * 10) / 10;
+  return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)} lb`;
+}
