@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { AppProvider } from "@/components/app-provider";
 import "./globals.css";
 
@@ -24,6 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-dvh antialiased">
         <AppProvider>{children}</AppProvider>
+        {/* Page views only, so we can tell whether anyone opened the link at
+            all. Cookieless and anonymous -- it sees no household, name or
+            photo, and our own seven product events stay in Supabase. */}
+        <Analytics />
       </body>
     </html>
   );
