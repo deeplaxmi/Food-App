@@ -66,7 +66,7 @@ export default function SettingsPage() {
             </div>
             <p className="mt-3 text-[15px] leading-snug text-muted">
               {mode === "synced"
-                ? "Your household, scans and feedback are saved to this app's database, so they survive a lost phone. No account or password needed."
+                ? "Your household, scans and feedback are saved to this app's database, not just in the page, so a refresh or a closed tab won't lose them. The key that finds your data lives in this browser though -- a new phone starts fresh. No account or password needed, and no sign-in to recover it yet."
                 : "Everything stays in this browser. It works fine, but clearing browser data will lose it."}
             </p>
           </Card>

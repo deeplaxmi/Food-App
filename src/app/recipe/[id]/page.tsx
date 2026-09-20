@@ -126,7 +126,7 @@ function RecipeScreen() {
             <p className="mt-2 text-[16px] leading-snug text-ink">{forLittleOnes.note}</p>
             <p className="mt-3 text-[14px] leading-snug text-muted">
               Just a way to serve the same meal. We don't give advice on feeding children —
-              that's between you and your health visitor.
+              serve it whatever way works best for your family.
             </p>
           </Card>
         )}

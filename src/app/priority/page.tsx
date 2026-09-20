@@ -13,7 +13,7 @@ import {
   Screen,
   Spinner,
 } from "@/components/ui";
-import { BAND_BLURB, BAND_LABELS, FRESHNESS_DISCLAIMER } from "@/lib/freshness";
+import { BAND_BLURB, BAND_LABELS, FRESHNESS_DISCLAIMER, whenToUse } from "@/lib/freshness";
 import { bandedItems, groupByBand, scanById } from "@/lib/selectors";
 
 const PURCHASE_OPTIONS = [
@@ -132,11 +132,7 @@ function PriorityScreen() {
                     <p className="text-[15px] text-muted">{item.quantity}</p>
                   </div>
                   <BandBadge band={item.band}>
-                    {scan.purchasedOn
-                      ? item.daysLeft === 0
-                        ? "Today"
-                        : `~${item.daysLeft} day${item.daysLeft === 1 ? "" : "s"}`
-                      : BAND_LABELS[item.band]}
+                    {scan.purchasedOn ? whenToUse(item.daysLeft) : BAND_LABELS[item.band]}
                   </BandBadge>
                 </Card>
               ))}

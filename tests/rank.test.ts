@@ -460,3 +460,43 @@ test("one sitting isn't enough to conclude anything about someone", () => {
     "a single skipped meal shouldn't label a child a fussy eater",
   );
 });
+
+test("a disliked main ingredient is kept out of the three meals when it can be", () => {
+  const profile = buildProfile(
+    household,
+    members,
+    prefs([{ dislikes: ["mushrooms"] }]),
+    [],
+  );
+  const { suggestions } = recommend(profile, produce);
+
+  for (const s of suggestions) {
+    assert.equal(
+      s.dislikedMain.length,
+      0,
+      `${s.recipe.title} is built on something Ada won't eat, and we had alternatives`,
+    );
+    assert.ok(
+      !s.recipe.produceUsed.some((p) => /mushroom/i.test(p.name)),
+      `${s.recipe.title} still leads with mushrooms`,
+    );
+  }
+});
+
+test("when every option is contested, we still suggest -- and say so on the card", () => {
+  // Mushrooms are the only thing in the house, so stepping around the dislike
+  // would mean showing nothing. Showing nothing is worse; showing it silently
+  // is worse still.
+  const profile = buildProfile(household, members, prefs([{ dislikes: ["mushrooms"] }]), []);
+  const onlyMushrooms: AvailableItem[] = [
+    { name: "Mushrooms", quantity: "2 punnets", band: "use-first" },
+  ];
+  const { suggestions } = recommend(profile, onlyMushrooms);
+
+  assert.ok(suggestions.length > 0, "should still offer something to cook");
+  const contested = suggestions.filter((s) => s.dislikedMain.length > 0);
+  for (const s of contested) {
+    assert.deepEqual(s.dislikedMain[0].who, ["Ada"]);
+    assert.equal(s.dislikedMain[0].ingredient, "mushrooms");
+  }
+});

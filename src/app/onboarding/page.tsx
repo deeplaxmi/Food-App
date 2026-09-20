@@ -188,7 +188,7 @@ export default function OnboardingPage() {
           [
             "This is just so we can size recipes properly.",
             "First names or nicknames are fine. Ages help us size portions and suggest something a small child will actually eat.",
-            "This is the one thing we never guess at. We'll never suggest a recipe containing these.",
+            "This is the one thing we never guess at. We treat these as hard exclusions -- but always check ingredients and product labels yourself before you cook.",
             "Skip anyone you're not sure about — you can add this later.",
             "We'll keep weeknight suggestions inside this.",
             "We'll assume you have these, so the shopping list stays short.",
@@ -482,7 +482,7 @@ export function MemberPreferences({
           <Field
             group
             label="Allergies"
-            hint="We'll never suggest a recipe containing these."
+            hint="We treat these as hard exclusions. Always check labels yourself before cooking."
           >
             <TagInput
               values={member.allergies}

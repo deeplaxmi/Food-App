@@ -355,6 +355,13 @@ export interface ScoredRecipe {
   missingPurchases: string[];
   preferencesConsidered: string[];
   warnings: string[];
+  /**
+   * Someone in the house dislikes an ingredient this recipe is actually built
+   * on. Not an allergy, so not a hard exclusion -- but offering it as "the best
+   * match for your family" reads as not having listened, so `recommend` steps
+   * around these whenever it has the choice.
+   */
+  dislikedMain: { ingredient: string; who: string[] }[];
   /** Ingredients we could not verify against the allergen map, for an allergy household. */
   unverified: string[];
 }
@@ -371,6 +378,7 @@ export function scoreRecipe(
   const availableByName = new Map(available.map((a) => [canonicalName(a.name), a]));
   const preferencesConsidered: string[] = [];
   const warnings: string[] = [];
+  const dislikedMain: { ingredient: string; who: string[] }[] = [];
   let score = 0;
 
   // 1. Produce actually used, weighted by how soon it needs cooking.
@@ -426,6 +434,7 @@ export function scoreRecipe(
     );
     if (inProduce) {
       score -= 30;
+      dislikedMain.push({ ingredient: disliked, who });
       warnings.push(`${formatNames(who)} doesn't like ${disliked}, and it's a main ingredient here.`);
     } else if (inOthers) {
       score -= 14;
@@ -503,6 +512,7 @@ export function scoreRecipe(
     missingPurchases,
     preferencesConsidered,
     warnings,
+    dislikedMain,
     unverified: gate.unverified,
   };
 }
@@ -537,7 +547,15 @@ export function recommend(
   // household, not the fastest thing that happens to be edible. Without this,
   // a family who only eat Indian can be shown a quesadilla purely because it
   // is quick -- and worse, have it labelled the best match for them.
-  const byScore = [...scored].sort((a, b) => b.score - a.score);
+  // A dislike isn't an allergy, so it can't be a hard exclusion -- but a recipe
+  // built on an ingredient someone in the house won't eat has no business being
+  // offered as one of three dinners when other options exist. Step around them
+  // whenever we can still fill the slots; fall back only if we'd otherwise have
+  // nothing to show, and the card says plainly why it's there.
+  const uncontested = scored.filter((s) => s.dislikedMain.length === 0);
+  const considered = uncontested.length >= 3 ? uncontested : scored;
+
+  const byScore = [...considered].sort((a, b) => b.score - a.score);
   const top = byScore[0]?.score ?? 0;
   const cutoff = top > 0 ? top * 0.5 : Number.NEGATIVE_INFINITY;
   const suitable = byScore.filter((s) => s.score >= cutoff);

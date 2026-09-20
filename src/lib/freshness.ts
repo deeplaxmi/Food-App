@@ -180,3 +180,18 @@ const DEFAULT_ITEM = { grams: 250, usd: 2.0 };
 export function typicalItemValue(name: string): { grams: number; usd: number } {
   return TYPICAL_ITEM[canonicalName(name)] ?? DEFAULT_ITEM;
 }
+
+/**
+ * How long something has left, said the way a person would say it. The
+ * underlying number is a general shelf-life table minus days elapsed, which is
+ * nowhere near precise enough to deserve "~3 days" -- that reads like we
+ * measured something. These phrases carry the same ordering without the false
+ * precision.
+ */
+export function whenToUse(daysLeft: number): string {
+  if (daysLeft <= 0) return "Today";
+  if (daysLeft === 1) return "Today or tomorrow";
+  if (daysLeft <= 3) return "Next couple of days";
+  if (daysLeft <= 7) return "This week";
+  return "Still has time";
+}

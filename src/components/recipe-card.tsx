@@ -30,7 +30,7 @@ function CardArt({ title, slot }: { title: string; slot: string }) {
 }
 
 export function RecipeCard({ suggestion, scanId }: { suggestion: Suggestion; scanId: string }) {
-  const { recipe, slot, slotLabel, why, matchedProduce, missingPurchases, unverified } =
+  const { recipe, slot, slotLabel, why, matchedProduce, missingPurchases, unverified, dislikedMain } =
     suggestion;
   const useFirst = matchedProduce.filter((m) => m.band === "use-first");
 
@@ -52,6 +52,20 @@ export function RecipeCard({ suggestion, scanId }: { suggestion: Suggestion; sca
         </div>
 
         <p className="mt-4 text-[16px] leading-snug text-ink">{why}</p>
+
+        {/* If we're offering a meal built on something someone here won't eat, it
+            has to say so on the card. "Why this works for your family" sitting
+            above an unmentioned dislike is the fastest way to lose their trust. */}
+        {dislikedMain.map((d) => (
+          <p
+            key={d.ingredient}
+            className="mt-3 rounded-2xl border border-hairline bg-shell px-4 py-3 text-[14px] leading-snug text-ink"
+          >
+            <strong className="font-bold">{formatList(d.who)} doesn&apos;t eat {d.ingredient}</strong>
+            , and it&apos;s a main ingredient here. Nothing else tonight used up as much of your
+            produce, so it&apos;s still worth a look.
+          </p>
+        ))}
 
         <div className="mt-4 space-y-2">
           <p className="text-[13px] font-semibold uppercase tracking-wide text-muted">Uses</p>
